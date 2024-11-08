@@ -1,0 +1,28 @@
+{
+  "name": "aa-lwc",
+  "version": "1.0.0",
+  "description": "Now that you've created a Salesforce DX project, what's next? Here are some documentation resources to get you started.",
+  "main": "index.js",
+  "scripts": {
+    "generate-static-resources": "./setup.sh generate-static-resources",
+    "login": "sf org login web --alias ProdOrg && sf config set target-org ProdOrg",
+    "deploy": "sf project deploy start --target-org ProdOrg",
+    "login-devhub": "./setup.sh login-devhub",
+    "setup-scratch": "./setup.sh setup-scratch",
+    "deploy-scratch": "./setup.sh deploy-scratch",
+    "teardown-scratch": "./setup.sh teardown-scratch",
+    "test": "sfdx-lwc-jest -- --forceExit --detectOpenHandles"
+  },
+  "author": "Jordan",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@salesforce/lwc-dev-server": "^2.11.0",
+    "@salesforce/sfdx-lwc-jest": "^5.1.0",
+    "cross-fetch": "^4.0.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier-plugin-apex": "^2.1.4"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}

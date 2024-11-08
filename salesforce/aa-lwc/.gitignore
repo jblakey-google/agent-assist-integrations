@@ -1,0 +1,15 @@
+# VSCode
+.vscode
+
+# Salesforce
+.sf
+.sfdx
+.localdevserver
+
+# NodeJS
+node_modules
+
+# Static Resources
+force-app/main/default/staticresources/*
+!force-app/main/default/staticresources/google_logo.resource-meta.xml
+!force-app/main/default/staticresources/google_logo.svg

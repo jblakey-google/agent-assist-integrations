@@ -1,0 +1,105 @@
+/**
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* Container */
+.agent-assist-component {
+  background: #fff;
+  border-radius: 4px;
+  padding: 4px;
+  width: 100%;
+}
+
+.drag-container:not(:first-of-type) {
+  margin-top: 8px;
+}
+
+/* Header */
+.header {
+  align-items: center;
+  display: flex;
+  line-height: 100%;
+  padding: 8px 4px 8px 12px;
+}
+
+.header h2 {
+  padding-bottom: 1px;
+  font:
+    500 20px/24px Google Sans,
+    Helvetica Neue,
+    sans-serif;
+}
+
+.header .google-logo {
+  margin: 0 4px 0 0;
+  width: 80px;
+}
+
+/* Transcript */
+.transcript-container {
+  border: 1px solid #ddd;
+  margin-top: 8px;
+}
+
+.transcript-container h3 {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dadce0;
+  color: #5f6368;
+  padding: 7px 11px;
+
+font:
+    500 16px/22px Google Sans,
+    Helvetica Neue,
+    sans-serif;
+}
+
+.conversation-container:has(*) {
+  padding-top: 8px !important;
+}
+
+.container .icon-container .role-icon {
+  display: flex !important;
+  padding: 4.5px !important;
+}
+
+.mat-mdc-button > .mat-icon,
+.mat-mdc-unelevated-button > .mat-icon,
+.mat-mdc-raised-button > .mat-icon,
+.mat-mdc-outlined-button > .mat-icon {
+  height: 100%;
+}
+
+/* Load Error */
+.load-error {
+  border-radius: 4px;
+  border: 1px solid hsl(5, 81%, 75%);
+  background: hsl(5, 81%, 95%);
+  margin-top: 8px;
+}
+
+.load-error h3, .load-error p {
+  color: hsl(5, 81%, 56%);
+  padding: 7px 11px 4px 11px;
+  font:
+      500 16px/22px Google Sans,
+      Helvetica Neue,
+      sans-serif;
+}
+
+.load-error p {
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 11px 7px 11px;
+}
