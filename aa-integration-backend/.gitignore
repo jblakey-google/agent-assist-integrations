@@ -1,0 +1,5 @@
+# IDE & Virtual Environment
+.vscode
+
+# Environment Variables
+.env

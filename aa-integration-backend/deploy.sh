@@ -61,11 +61,14 @@ export REDIS_IP_RANGE='10.8.0.0/28'
 # The option of authenticating users when registering JWT. By default it's empty and
 # no users are allowed to register JWT via UI Connector service.
 # Supported values:
-#   1. 'Salesforce': verify the auth token using Salesforce OpenID Connect.
-#   2. 'GenesysCloud': verify the auth token using Genesys SDK UsersAPI.
-#   3. 'Twilio': verify the auth token for Twilio.
-#   4. 'Skip': skip auth token verification, should not be used in production.
+#   1. 'SalesforceLWC': verify creds with the OAuth Client Credentials Flow.
+#   2. 'Salesforce': verify auth token using Salesforce OpenID Connect (Canvas).
+#   3. 'GenesysCloud': verify the auth token using Genesys SDK UsersAPI.
+#   4. 'Twilio': verify the auth token for Twilio.
+#   5. 'Skip': skip auth token verification, should not be used in production.
 export AUTH_OPTION=''
+# export SALESFORCE_DOMAIN='' # For "SalesforceLWC" auth option. Should not include "https://".
+# export SALESFORCE_ORGANIZATION_ID='' # For "SalesforceLWC" auth option
 
 # TODO: Check the secret key you plan to use.
 # We recommend generating a random hash as the JWT secret key so that it cannot be guessed by attackers.
@@ -94,6 +97,13 @@ export AGENT_ASSIST_NOTIFICATIONS_SUBSCRIPTION_ID='aa-new-suggestion-sub'
 export NEW_MESSAGE_NOTIFICATIONS_SUBSCRIPTION_ID='aa-new-message-sub'
 export CONVERSATION_LIFECYCLE_NOTIFICATIONS_SUBSCRIPTION_ID='aa-conversation-event-sub'
 
+# Optionally load environment variables from a .env file if one exists
+if [ ! -f ./.env ]; then
+  echo "No .env file in the current directory"
+else
+  source ./.env
+  printf "\n\nSourced .env in the current directory\n\n"
+fi
 
 echo -e "\n\n ==================== Set up Google Cloud CLI Configurations =================== \n\n"
 
@@ -144,19 +154,24 @@ fi
 # Add necessary IAM roles for UI Connector service account.
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$connector_service_account" \
-  --role='roles/redis.editor'
+  --role='roles/redis.editor' \
+  --condition="None"
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$connector_service_account" \
-  --role='roles/vpcaccess.user'
+  --role='roles/vpcaccess.user' \
+  --condition="None"
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$connector_service_account" \
-  --role='roles/compute.viewer'
+  --role='roles/compute.viewer' \
+  --condition="None"
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$connector_service_account" \
-  --role='roles/secretmanager.secretAccessor'
+  --role='roles/secretmanager.secretAccessor' \
+  --condition="None"
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$connector_service_account" \
-  --role='roles/dialogflow.agentAssistClient'
+  --role='roles/dialogflow.agentAssistClient' \
+  --condition="None"
 
 # Create service account for Cloud Pub/Sub Interceptor service runtime.
 interceptor_service_account="$INTERCEPTOR_SERVICE_ACCOUNT_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com"
@@ -172,13 +187,16 @@ fi
 # Add necessary IAM roles for Cloud Pub/Sub Interceptor service account.
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$interceptor_service_account" \
-  --role='roles/redis.editor'
+  --role='roles/redis.editor' \
+  --condition="None"
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$interceptor_service_account" \
-  --role='roles/vpcaccess.user'
+  --role='roles/vpcaccess.user' \
+  --condition="None"
 gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
   --member="serviceAccount:$interceptor_service_account" \
-  --role='roles/compute.viewer'
+  --role='roles/compute.viewer' \
+  --condition="None"
 
 
 echo -e '\n\n ===================== Create a JWT Secret Key ===================== \n\n'
@@ -236,9 +254,13 @@ gcloud run deploy $CONNECTOR_SERVICE_NAME \
   --region $SERVICE_REGION \
   --vpc-connector $VPC_CONNECTOR_NAME \
   --min-instances=1 \
-  --set-env-vars REDISHOST=$REDIS_HOST,REDISPORT=$REDIS_PORT,GCP_PROJECT_ID=$GCP_PROJECT_ID,AUTH_OPTION=$AUTH_OPTION \
-  --update-secrets=/secret/jwt_secret_key=${JWT_SECRET_NAME}:latest
-
+  --update-secrets=/secret/jwt_secret_key=${JWT_SECRET_NAME}:latest \
+  --set-env-vars REDISHOST=$REDIS_HOST \
+  --set-env-vars REDISPORT=$REDIS_PORT \
+  --set-env-vars GCP_PROJECT_ID=$GCP_PROJECT_ID \
+  --set-env-vars AUTH_OPTION=$AUTH_OPTION \
+  --set-env-vars SALESFORCE_DOMAIN=$SALESFORCE_DOMAIN \
+  --set-env-vars SALESFORCE_ORGANIZATION_ID=$SALESFORCE_ORGANIZATION_ID
 
 echo -e '\n\n =================== Deploy Cloud PubSub Interceptor Service =================== \n\n'
 
@@ -252,7 +274,34 @@ gcloud run deploy $INTERCEPTOR_SERVICE_NAME \
   --vpc-connector $VPC_CONNECTOR_NAME \
   --ingress=internal \
   --min-instances=1 \
-  --set-env-vars REDISHOST=$REDIS_HOST,REDISPORT=$REDIS_PORT
+  --set-env-vars REDISHOST=$REDIS_HOST \
+  --set-env-vars REDISPORT=$REDIS_PORT
+
+echo -e '\n\n ================= Create Cloud PubSub Topic ================== \n\n'
+
+conversation_lifecycle_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID"
+if [[ "$conversation_lifecycle_notifications_topic_name" = \
+  `gcloud pubsub topics list --filter=$CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID --format='value(name)'` ]]; then
+  echo "Skip creating Pub/Sub topic $CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID as it exists."
+else
+  gcloud pubsub topics create $CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID
+fi
+
+agent_assist_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID"
+if [[ "$agent_assist_notifications_topic_name" = \
+  `gcloud pubsub topics list --filter=$AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID --format='value(name)'` ]]; then
+  echo "Skip creating Pub/Sub topic $AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID as it exists."
+else
+  gcloud pubsub topics create $AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID
+fi
+
+new_message_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID"
+if [[ "$new_message_notifications_topic_name" = \
+  `gcloud pubsub topics list --filter=$NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID --format='value(name)'` ]]; then
+  echo "Skip creating Pub/Sub topic $NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID as it exists."
+else
+  gcloud pubsub topics create $NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID
+fi
 
 
 echo -e '\n\n ================= Configure Cloud PubSub Topic Subscriptions ================== \n\n'

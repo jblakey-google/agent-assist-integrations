@@ -43,14 +43,16 @@ JWT_TOKEN_LIFETIME = 60  # minutes
 # The option of authenticating users when registering JWT. By default it's empty and
 # no users are allowed to register JWT via UI Connector service.
 # Supported values:
-#   1. 'Salesforce': verify the auth token using Salesforce OpenID Connect. Required environment variable: SALESFORCE_ORGANIZATION_ID.
-#   2. 'GenesysCloud': verify the auth token using Genesys SDK UsersAPI.
-#   3. 'Twilio': verify the auth token for Twilio. Required environment variable: TWILIO_FLEX_ENVIRONMENT.
-#   4. 'Skip': skip auth token verification, should not be used in production.
+#   1. 'SalesforceLWC': verify creds with the OAuth Client Credentials Flow. Required environment variables: SALESFORCE_DOMAIN, SALESFORCE_ORGANIZATION_ID.
+#   2. 'Salesforce': verify the auth token using Salesforce OpenID Connect. Required environment variable: SALESFORCE_ORGANIZATION_ID.
+#   3. 'GenesysCloud': verify the auth token using Genesys SDK UsersAPI.
+#   4. 'Twilio': verify the auth token for Twilio. Required environment variable: TWILIO_FLEX_ENVIRONMENT.
+#   5. 'Skip': skip auth token verification, should not be used in production.
 AUTH_OPTION = os.environ.get('AUTH_OPTION', '')
 
 # Salesforce configuration
 # For sandbox environment, please replace login.salesforce.com with test.salesforce.com.
+# For SalesforceLWC auth option, please replace login.salesforce.com with <your-salesforce-org-domain>.<org-type>.lightning.force.com.
 SALESFORCE_DOMAIN = os.environ.get('SALESFORCE_DOMAIN', 'login.salesforce.com')
 SALESFORCE_ORGANIZATION_ID = os.environ.get('SALESFORCE_ORGANIZATION_ID', 'YOUR_ORGANIZATION_ID')
 

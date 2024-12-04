@@ -29,7 +29,9 @@ def load_jwt_secret_key():
 
 
 def check_auth(token):
-    if (config.AUTH_OPTION == 'Salesforce'):
+    if (config.AUTH_OPTION == 'SalesforceLWC'):
+        return auth_options.check_salesforce_lwc_token(token)
+    elif (config.AUTH_OPTION == 'Salesforce'):
         return auth_options.check_salesforce_token(token)
     elif (config.AUTH_OPTION == 'GenesysCloud'):
         return auth_options.check_genesyscloud_token(token)
@@ -63,7 +65,7 @@ def check_jwt(token):
 def generate_jwt(user_info=None):
     gcp_agent_assist_user = ''
     if user_info:
-        gcp_agent_assist_user = user_info['gcp_agent_assist_user']
+        gcp_agent_assist_user = user_info.get('gcp_agent_assist_user')
     return jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=config.JWT_TOKEN_LIFETIME),
                        'gcp_agent_assist_project': config.GCP_PROJECT_ID,
                        'gcp_agent_assist_user': gcp_agent_assist_user},
