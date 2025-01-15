@@ -17,8 +17,7 @@
 import { LightningElement, wire, api } from "lwc";
 import { MessageContext } from "lightning/messageService";
 import { loadScript } from "lightning/platformResourceLoader";
-import container from "@salesforce/resourceUrl/container";
-import transcript from "@salesforce/resourceUrl/transcript";
+import ui_modules from "@salesforce/resourceUrl/ui_modules";
 import google_logo from "@salesforce/resourceUrl/google_logo";
 
 import integration from "./helpers/integration";
@@ -49,33 +48,45 @@ export default class AgentAssistContainerModule extends LightningElement {
 
   connectedCallback() {
     integration.checkConfiguration(
-      this.endpoint, this.features, this.conversationProfile, this.consumerKey,
-      this.consumerSecret, this.developmentMode);
+      this.endpoint,
+      this.features,
+      this.conversationProfile,
+      this.consumerKey,
+      this.consumerSecret,
+      this.developmentMode
+    );
   }
   disconnectedCallback() {
     messageChannels.unsubscribeToMessageChannels();
-    window._uiModuleEventTarget = window._uiModuleEventTarget.cloneNode(true)
+    window._uiModuleEventTarget = window._uiModuleEventTarget.cloneNode(true);
   }
 
   async renderedCallback() {
-    if (this.loadError) return
-
+    if (this.loadError) return;
     await Promise.all([
-      loadScript(this, container),
-      loadScript(this, transcript)
+      loadScript(this, ui_modules + "/container.js"),
+      loadScript(this, ui_modules + "/transcript.js")
     ]);
-
     try {
       this.token = await integration.registerAuthToken(
-        this.consumerKey, this.consumerSecret, this.endpoint);
+        this.consumerKey,
+        this.consumerSecret,
+        this.endpoint
+      );
       this.conversationId = `SF-${this.recordId}`;
       messageChannels.subscribeToMessageChannels(
-        this.recordId, this.developmentMode, this.conversationName, this.features,
-        this.conversationId, this.messageContext);
+        this.recordId,
+        this.developmentMode,
+        this.conversationName,
+        this.features,
+        this.conversationId,
+        this.messageContext
+      );
     } catch (error) {
-      this.loadError = new Error(`Got error: "${error.message}". Unable to authorize, please check your SF Trusted URLs, console, and configuration.`)
+      this.loadError = new Error(
+        `Got error: "${error.message}". Unable to authorize, please check your SF Trusted URLs, console, and configuration.`
+      );
     }
-
     try {
       this.project = this.conversationProfile.match(
         /projects\/(?<p>[\w-_]+)/
@@ -84,12 +95,13 @@ export default class AgentAssistContainerModule extends LightningElement {
         /locations\/(?<l>[\w-_]+)/
       ).groups.l;
     } catch (error) {
-      this.loadError = new Error(`"${this.conversationProfile}" is not a valid conversation profile.
+      this.loadError =
+        new Error(`"${this.conversationProfile}" is not a valid conversation profile.
         Expected format: projects/<projectId>/locations/<location>/conversationProfiles/<conversationProfileId>`);
     }
     this.conversationName = `projects/${this.project}/locations/${this.location}/conversations/${this.conversationId}`;
 
-    this.initAgentAssistEvents()
+    this.initAgentAssistEvents();
 
     // Optionally enable helpful console logs and conversation transcript
     if (this.developmentMode) {
@@ -135,8 +147,13 @@ export default class AgentAssistContainerModule extends LightningElement {
   initAgentAssistEvents() {
     addAgentAssistEventListener(
       "api-connector-initialized",
-      (event) => integration.handleApiConnectorInitialized(
-        event, this.developmentMode, this.conversationName, this.recordId),
+      (event) =>
+        integration.handleApiConnectorInitialized(
+          event,
+          this.developmentMode,
+          this.conversationName,
+          this.recordId
+        ),
       { namespace: this.recordId }
     );
     addAgentAssistEventListener(
@@ -149,20 +166,29 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.recordId,
           this.developmentMode,
           this.conversationId,
-          this.conversationName);
+          this.conversationName
+        );
       },
       { namespace: this.recordId }
     );
     addAgentAssistEventListener(
       "smart-reply-selected",
-      (event) => integration.handleSmartReplySelected(
-        event, this.refs.lwcToolKitApi, this.recordId),
+      (event) =>
+        integration.handleSmartReplySelected(
+          event,
+          this.refs.lwcToolKitApi,
+          this.recordId
+        ),
       { namespace: this.recordId }
     );
     addAgentAssistEventListener(
       "agent-coaching-response-selected",
-      (event) => integration.handleAgentCoachingResponseSelected(
-        event, this.refs.lwcToolKitApi, this.recordId),
+      (event) =>
+        integration.handleAgentCoachingResponseSelected(
+          event,
+          this.refs.lwcToolKitApi,
+          this.recordId
+        ),
       { namespace: this.recordId }
     );
     addAgentAssistEventListener(

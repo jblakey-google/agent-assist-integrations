@@ -1,11 +1,11 @@
 {
   "name": "aa-lwc",
   "version": "1.0.0",
-  "description": "Now that you've created a Salesforce DX project, what's next? Here are some documentation resources to get you started.",
+  "description": "Agent Assist Lightning Web Components integration example.",
   "main": "index.js",
   "scripts": {
     "generate-static-resources": "./setup.sh generate-static-resources",
-    "login": "sf org login web --alias ProdOrg && sf config set target-org ProdOrg",
+    "login": "sf org login device --alias ProdOrg && sf config set target-org ProdOrg",
     "deploy": "sf project deploy start --target-org ProdOrg",
     "login-devhub": "./setup.sh login-devhub",
     "setup-scratch": "./setup.sh setup-scratch",

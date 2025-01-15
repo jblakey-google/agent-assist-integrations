@@ -17,18 +17,19 @@ if [[ $1 == 'generate-static-resources' ]]; then
   # UI Modules Javascript
   # https://cloud.google.com/agent-assist/docs/ui-modules#agent-assist-features
   # Uncomment below to download JS for individual UI Modules
-  for file in container transcript # transcript summarization smart_reply knowledge_assist
+
+  for file in container transcript # summarization smart_reply knowledge_assist
   do
-    file_path=force-app/main/default/staticresources/${file}.js
-    rm -f $file_path # delete file if exists
-    rm -f $file_path.resource-meta.xml # delete file if exists
-    sf static-resource generate \
-        --name ${file} \
-        --output-dir force-app/main/default/staticresources \
-        --type application/javascript
-    curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > $file_path
-    echo downloaded js and wrote $file_path
+    dir_path=force-app/main/default/staticresources/ui_modules
+    file_path=${dir_path}/${file}.js
+    mkdir -p ${dir_path}
+    curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > ${file_path}
+    echo downloaded js and wrote ${file_path}
   done
+  sf static-resource generate \
+    --name ui_modules \
+    --output-dir force-app/main/default/staticresources \
+    --type application/zip
 
   # UI Modules - Knowledge Assist (not GKA) Javascript
   # https://cloud.google.com/agent-assist/docs/ui-modules-knowledge-assist-documentation
@@ -47,12 +48,12 @@ if [[ $1 == 'generate-static-resources' ]]; then
   # SVG Files
   # Place .svg files in the staticresources directory, then...
   for file in $(ls force-app/main/default/staticresources/ | grep -E 'svg'); do
-    file=$(echo $file | cut -d . -f 1)
+    file=$(echo ${file} | cut -d . -f 1)
     sf static-resource generate \
         --name ${file} \
         --output-dir force-app/main/default/staticresources \
         --type image/svg+xml
-    rm force-app/main/default/staticresources/$file.resource # don't need, file exists
+    rm force-app/main/default/staticresources/${file}.resource # don't need, file exists
   done
   # Add file types as needed (or dynamically assign MIME by extension), e.g.
   # file=large-css-file
@@ -66,9 +67,9 @@ if [[ $1 == 'generate-static-resources' ]]; then
 elif [[ $1 == 'login-devhub' ]]; then
   printf "Enter your Developer Edition email from\nhttps://trailhead.salesforce.com/users/profiles/orgs: "
   read DEV_EMAIL
-  INSTANCE_URL=https://$(echo $DEV_EMAIL | cut -f 2 -d @ | cut -f 1 -d .)-dev-ed.trailblaze.my.salesforce.com
-  echo "Log in using the browser..."
-  sf org login web --set-default-dev-hub --alias DevHub --instance-url=$INSTANCE_URL
+  INSTANCE_URL=https://$(echo ${DEV_EMAIL} | cut -f 2 -d @ | cut -f 1 -d .)-dev-ed.trailblaze.my.salesforce.com
+  echo "Log in using access code and browser..."
+  sf org login device --set-default-dev-hub --alias DevHub --instance-url=${INSTANCE_URL}
 
 elif [[ $1 == 'setup-scratch' ]]; then
   sf org create scratch \
