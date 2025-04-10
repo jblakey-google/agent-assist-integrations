@@ -1,5 +1,5 @@
 <!--
- Copyright 2024 Google LLC
+ Copyright 2025 Google LLC
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,19 +16,13 @@
 
 <template>
   <div class="agent-assist-component">
-    <div class="header">
-      <img class="google-logo" src={googleLogoUrl} />
-      <h2>Contact Center AI</h2>
-    </div>
     <lightning-conversation-toolkit-api lwc:ref="lwcToolKitApi">
     </lightning-conversation-toolkit-api>
-    <div class="agent-assist-container" lwc:dom="manual"></div>
-
-    <div class="transcript-container" lwc:if={developmentMode} >
-      <h3>Chat Transcript</h3>
+    <div class="transcript-container hidden" lwc:if={showTranscript} >
+      <h3>Transcript</h3>
       <div class="agent-assist-transcript" lwc:dom="manual"></div>
     </div>
-
+    <div class="agent-assist-container" lwc:dom="manual"></div>
     <div class="load-error" lwc:if={loadError} >
       <h3>Load Error</h3>
       <p>{loadError.message}</p>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 
 import {
-  subscribe,
-  unsubscribe,
-  APPLICATION_SCOPE
+    APPLICATION_SCOPE,
+    subscribe,
+    unsubscribe
 } from "lightning/messageService";
 
 import conversationAgentSendChannel from "@salesforce/messageChannel/lightning__conversationAgentSend";
@@ -25,11 +25,11 @@ import conversationEndUserMessageChannel from "@salesforce/messageChannel/lightn
 import conversationEndedChannel from "@salesforce/messageChannel/lightning__conversationEnded";
 
 function handleConversationEnded(
-  message, recordId, developmentMode, conversationName, features) {
+  message, recordId, debugMode, conversationName, features) {
 
 
   if (recordId !== message.recordId) return; // conditionally ignore event
-  if (developmentMode) {
+  if (debugMode) {
     console.log(
       "handleConversationEnded:",
       conversationName,
@@ -47,9 +47,9 @@ function handleConversationEnded(
 }
 
 function handleMessageSend(
-  senderRole, message, recordId, developmentMode, conversationId) {
+  senderRole, message, recordId, debugMode, conversationId) {
   if (recordId !== message.recordId) return; // conditionally ignore event
-  if (developmentMode) {
+  if (debugMode) {
     console.log(
       "handleMessageSend:",
       conversationId,
@@ -83,26 +83,26 @@ function subscribeToMessageChannel(messageContext, channel, handler) {
 }
 
 export function subscribeToMessageChannels(
-  recordId, developmentMode, conversationName, features,
+  recordId, debugMode, conversationName, features,
   conversationId, messageContext) {
 
   subscribeToMessageChannel(
     messageContext,
     conversationAgentSendChannel,
     (event) => handleMessageSend(
-      'HUMAN_AGENT', event, recordId, developmentMode, conversationId)
+      'HUMAN_AGENT', event, recordId, debugMode, conversationId)
   );
   subscribeToMessageChannel(
     messageContext,
     conversationEndUserMessageChannel,
     (event) => handleMessageSend(
-      'END_USER', event, recordId, developmentMode, conversationId)
+      'END_USER', event, recordId, debugMode, conversationId)
   );
   subscribeToMessageChannel(
     messageContext,
     conversationEndedChannel,
     (event) => handleConversationEnded(
-      event, recordId, developmentMode, conversationName, features)
+      event, recordId, debugMode, conversationName, features)
   );
 }
 

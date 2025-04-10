@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,19 @@
  */
 
 export function checkConfiguration(
-  endpoint, features, conversationProfile, consumerKey, consumerSecret, developmentMode) {
+  endpoint,
+  features,
+  conversationProfile,
+  consumerKey,
+  consumerSecret,
+  debugMode
+) {
   const checks = [
-    endpoint, features, conversationProfile, consumerKey, consumerSecret
+    endpoint,
+    features,
+    conversationProfile,
+    consumerKey,
+    consumerSecret
   ];
   let isConfigSet = true;
   checks.forEach((check) => {
@@ -28,7 +38,7 @@ export function checkConfiguration(
       );
     }
   });
-  if (developmentMode && isConfigSet) {
+  if (debugMode && isConfigSet) {
     console.log(
       "Agent Assist LWC config: finished check with no missing values."
     );
@@ -44,8 +54,12 @@ export async function registerAuthToken(consumerKey, consumerSecret, endpoint) {
         client_secret: consumerSecret
       })
   )
-    .then((res) => res.json())
-    .then((data) => data.access_token);
+    .then((res) => {
+      return res.json();
+    })
+    .then((data) => {
+      return data.access_token;
+    });
 
   return await fetch(endpoint + "/register", {
     method: "POST",
@@ -54,13 +68,19 @@ export async function registerAuthToken(consumerKey, consumerSecret, endpoint) {
       Authorization: `Bearer ${access_token}`
     }
   })
-    .then((res) => res.json())
+    .then((res) => {
+      return res.json();
+    })
     .then((data) => data.token);
 }
 
 export function handleApiConnectorInitialized(
-  event, developmentMode, conversationName, recordId) {
-  if (developmentMode) {
+  event,
+  debugMode,
+  conversationName,
+  recordId
+) {
+  if (debugMode) {
     console.log(event);
   }
   dispatchAgentAssistEvent(
@@ -75,10 +95,14 @@ export function handleApiConnectorInitialized(
 }
 
 function listMessagesResponseReceivedHandler(
-  event, sfMsgs, developmentMode, conversationId, recordId) {
-
+  event,
+  sfMsgs,
+  debugMode,
+  conversationId,
+  recordId
+) {
   const dfMsgs = event.detail.payload.messages || [];
-  if (developmentMode) {
+  if (debugMode) {
     console.log(
       `reconcileConversationLogs: ${sfMsgs.length} sfMsgs, ${dfMsgs.length} dfMsgs`
     );
@@ -87,30 +111,29 @@ function listMessagesResponseReceivedHandler(
   const countOfSalesforceMessagesToAdd = sfMsgs.length - dfMsgs.length;
   if (countOfSalesforceMessagesToAdd < 1) return;
   const newMsgs = sfMsgs.slice(sfMsgs.length - countOfSalesforceMessagesToAdd);
-  newMsgs.forEach(msg => {
+  newMsgs.forEach((msg) => {
     dispatchAgentAssistEvent(
       "analyze-content-requested",
       {
         detail: {
           conversationId: conversationId,
-          participantRole:
-            msg.type === "END_USER" ? "END_USER" : "HUMAN_AGENT",
+          participantRole: msg.type === "END_USER" ? "END_USER" : "HUMAN_AGENT",
           request: { textInput: { text: msg.content } }
         }
       },
       { namespace: recordId }
     );
-  })
+  });
 }
 
 export async function reconcileConversationLogs(
   unusedEvent,
   lwcToolKitApi,
   recordId,
-  developmentMode,
+  debugMode,
   conversationId,
-  conversationName) {
-
+  conversationName
+) {
   // Get Salesforce messages
   const toolKit = lwcToolKitApi;
   const sfConvLog = await toolKit.getConversationLog(recordId);
@@ -120,8 +143,14 @@ export async function reconcileConversationLogs(
   // Rsponse handler for DF messages request
   addAgentAssistEventListener(
     "list-messages-response-received",
-    (event) => listMessagesResponseReceivedHandler(
-      event, sfMsgs, developmentMode, conversationId, recordId),
+    (event) =>
+      listMessagesResponseReceivedHandler(
+        event,
+        sfMsgs,
+        debugMode,
+        conversationId,
+        recordId
+      ),
     { namespace: recordId }
   );
 
@@ -151,8 +180,8 @@ export async function handleAgentCoachingResponseSelected(
   });
 }
 
-export async function handleCopyToClipboard(event, developmentMode) {
-  if (developmentMode) {
+export async function handleCopyToClipboard(event, debugMode) {
+  if (debugMode) {
     console.log("copied:", event.detail.textToCopy);
   }
   navigator.clipboard.writeText(event.detail.textToCopy);

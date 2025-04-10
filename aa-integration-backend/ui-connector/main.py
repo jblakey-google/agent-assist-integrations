@@ -17,6 +17,8 @@ import os
 import json
 import random
 from datetime import datetime
+import gzip
+import hashlib
 
 from flask import Flask, request, make_response, jsonify, render_template
 from flask_cors import CORS
@@ -27,7 +29,7 @@ import time
 
 import config
 import dialogflow
-from auth import check_auth, generate_jwt, token_required, check_jwt, load_jwt_secret_key
+from auth import check_auth, generate_jwt, token_required, check_jwt, load_jwt_secret_key, check_app_auth
 
 app = Flask(__name__)
 CORS(app, origins=config.CORS_ALLOWED_ORIGINS)
@@ -49,11 +51,9 @@ def redis_pubsub_handler(message):
         msg_object['conversation_name'],
         msg_object['data_type']))
 
-
 def psubscribe_exception_handler(ex, pubsub, thread):
     logging.exception('An error occurred while getting pubsub messages: {}'.format(ex))
     time.sleep(2)
-
 
 SERVER_ID = '{}-{}'.format(random.uniform(0, 322321),
                            datetime.now().timestamp())
@@ -79,6 +79,7 @@ def get_conversation_name_without_location(conversation_name):
             name_array[i] for i in [0, 1, -2, -1])
     return conversation_name_without_location
 
+
 @app.route('/')
 def test():
     """Shows a test page for conversation runtime handling.
@@ -97,14 +98,24 @@ def check_status():
 @app.route('/register', methods=['POST'])
 def register_token():
     """Registers a JWT token after checking authorization header."""
-    auth = request.headers.get('Authorization')
+    auth = request.headers.get('Authorization', '')
     if not check_auth(auth):
         return make_response('Could not authenticate user', 401, {'Authentication': 'valid token required'})
     token = generate_jwt(request.get_json(force=True, silent=True))
     return jsonify({'token': token})
 
-# Note: Dialogflow methods projects.locations.conversations.list and projects.locations.answerRecords.list are not supported.
 
+@app.route('/register-app', methods=['POST'])
+def register_app_token():
+    """Registers a JWT token after checking application-level auth."""
+    data = request.get_json()
+    if not check_app_auth(data):
+        return make_response('Could not authenticate user', 401, {'Authentication': 'valid application level auth required'})
+    token = generate_jwt(request.get_json(force=True, silent=True))
+    return jsonify({'token': token})
+
+
+# Note: Dialogflow methods projects.locations.conversations.list and projects.locations.answerRecords.list are not supported.
 
 # projects.locations.answerRecords.patch
 @app.route('/<version>/projects/<project>/locations/<location>/answerRecords/<path:path>', methods=['PATCH'])
@@ -145,7 +156,7 @@ def call_dialogflow(version, project, location, path):
     if request.method == 'GET':
         response = dialogflow.get_dialogflow(location, request.full_path)
         logging.info('get_dialogflow response: {0}, {1}, {2}'.format(
-            response.raw.data, response.status_code, response.headers))
+            gzip.decompress(response.raw.data), response.status_code, response.headers))
         return response.raw.data, response.status_code, response.headers.items()
     elif request.method == 'POST':
         # Handles projects.conversations.complete, whose request body should be empty.
@@ -166,11 +177,66 @@ def call_dialogflow(version, project, location, path):
         return response.raw.data, response.status_code, response.headers.items()
 
 
+@app.route('/conversation-name', methods=['POST'])
+@token_required
+def set_conversation_name():
+    """Allows setting a conversationIntegrationKey:conversationName key/value pair in Redis.
+    This is useful in cases where it's not possible to send the DialogFlow
+    conversation name to the agent desktop directly. A good example of a
+    conversationIntegrationKey is a phone number.
+    """
+    conversation_integration_key = request.json.get('conversationIntegrationKey', '')
+    hashed_key = hashlib.sha256(conversation_integration_key.encode('utf-8')).hexdigest()
+    conversation_name = request.json.get('conversationName', '')
+    logging.info(
+        '/conversation-name - redis: SET %s %s', conversation_integration_key, conversation_name)
+    result = redis_client.set(hashed_key, conversation_name)
+    if not (conversation_integration_key and conversation_name and result):
+        return make_response('Bad request', 400)
+    else:
+        return jsonify({conversation_integration_key: conversation_name})
+
+@app.route('/conversation-name', methods=['GET'])
+@token_required
+def get_conversation_name():
+    """Allows agent desktops to get a DialogFlow conversation name from Redis
+    using a conversationIntegrationKey.
+    """
+    conversation_integration_key = str(request.args.get('conversationIntegrationKey'))
+    hashed_key = hashlib.sha256(conversation_integration_key.encode('utf-8')).hexdigest()
+    conversation_name = redis_client.get(hashed_key)
+    logging.info(
+        '/conversation-name - redis: GET %s -> %s', conversation_integration_key, conversation_name)
+    if not conversation_integration_key:
+        return make_response('Bad request', 400)
+    else:
+        return jsonify({'conversationName': str(conversation_name, encoding='utf-8') if conversation_name else ''})
+
+
+@app.route('/conversation-name', methods=['DELETE'])
+@token_required
+def del_conversation_name():
+    """Allows agent desktops to delete a DialogFlow conversation name from Redis
+    using a conversationIntegrationKey.
+    """
+    conversation_integration_key = str(request.args.get('conversationIntegrationKey'))
+    hashed_key = hashlib.sha256(conversation_integration_key.encode('utf-8')).hexdigest()
+    result = redis_client.delete(hashed_key)
+    logging.info(
+        '/conversation-name - redis: DEL %s, result %s', conversation_integration_key, result)
+    if conversation_integration_key == 'None':
+        return make_response('Bad request', 400)
+    elif not result:
+        return make_response('Not found', 404)
+    else:
+        return make_response('Success', 200)
+
+
 @socketio.on('connect')
-def connect(auth):
+def connect(auth={}):
     logging.info(
         'Receives connection request with sid: {0}.'.format(request.sid))
-    if 'token' in auth:
+    if isinstance(auth, dict) and 'token' in auth:
         is_valid, log_info = check_jwt(auth['token'])
         logging.info(log_info)
         if is_valid:

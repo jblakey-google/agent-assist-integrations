@@ -66,6 +66,13 @@ export AUTH_OPTION=${AUTH_OPTION:=''}
 # export SALESFORCE_DOMAIN='' # For "SalesforceLWC" auth option. Should not include "https://".
 # export SALESFORCE_ORGANIZATION_ID='' # For "SalesforceLWC" auth option
 
+# The option of authenticating apps when registering JWT. By default it's empty and
+# no apps are allowed to register JWT via UI Connector service.
+# Supported values:
+# 1. 'Twilio': verify accountSid and authToken using Twilio Accounts API.
+export APP_AUTH_OPTION=${APP_AUTH_OPTION:=''}
+# export TWILIO_ACCOUNT_SID='' # For 'Twilio' app auth option. Pairs with "SalesforceLWC" auth option when using Twilio voice.
+
 # TODO: Check the secret key you plan to use.
 # We recommend generating a random hash as the JWT secret key so that it cannot be guessed by attackers.
 export JWT_SECRET_KEY=`echo $RANDOM | md5sum | head -c 20;`
@@ -282,7 +289,10 @@ if [[ -z $VPC_CONNECTOR_NAME ]]; then
   --set-env-vars AUTH_OPTION=$AUTH_OPTION \
   --set-env-vars SALESFORCE_DOMAIN=$SALESFORCE_DOMAIN \
   --set-env-vars SALESFORCE_ORGANIZATION_ID=$SALESFORCE_ORGANIZATION_ID \
-  --set-env-vars GENESYS_CLOUD_ENVIRONMENT=$GENESYS_CLOUD_ENVIRONMENT
+  --set-env-vars GENESYS_CLOUD_ENVIRONMENT=$GENESYS_CLOUD_ENVIRONMENT \
+  --set-env-vars TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID \
+  --set-env-vars APP_AUTH_OPTION=$APP_AUTH_OPTION
+
 else
   echo "Deploying with a Serverless VPC Access connector."
   gcloud run deploy $CONNECTOR_SERVICE_NAME \
@@ -303,7 +313,9 @@ else
     --set-env-vars AUTH_OPTION=$AUTH_OPTION \
     --set-env-vars SALESFORCE_DOMAIN=$SALESFORCE_DOMAIN \
     --set-env-vars SALESFORCE_ORGANIZATION_ID=$SALESFORCE_ORGANIZATION_ID \
-    --set-env-vars GENESYS_CLOUD_ENVIRONMENT=$GENESYS_CLOUD_ENVIRONMENT
+    --set-env-vars GENESYS_CLOUD_ENVIRONMENT=$GENESYS_CLOUD_ENVIRONMENT \
+    --set-env-vars TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID \
+    --set-env-vars APP_AUTH_OPTION=$APP_AUTH_OPTION
 fi
 
 

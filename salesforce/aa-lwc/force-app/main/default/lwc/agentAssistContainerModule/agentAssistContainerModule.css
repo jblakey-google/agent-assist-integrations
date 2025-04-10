@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,43 +14,94 @@
  * limitations under the License.
  */
 
-/* Container */
+/* Agent Assist Modules Container */
 .agent-assist-component {
   background: #fff;
   border-radius: 4px;
   padding: 4px;
   width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .drag-container:not(:first-of-type) {
   margin-top: 8px;
 }
 
-/* Header */
-.header {
-  align-items: center;
-  display: flex;
+.agent-assist-container {
+  flex: 1;
+  max-width: 100%;
+}
+
+.modules-container .content-wrapper {
+  padding: 0;
+}
+
+.pending-suggested-queries-hidden {
+  display: none;
+}
+
+/* Generative Knowledge Assist */
+.content-wrapper .main-container {
+  padding: 8px;
+}
+
+.main-container .bottom-container > * {
+  margin: 8px 0 0;
+}
+
+.main-container .answer-card-container {
+  margin-bottom: 0;
+}
+
+.article-sources-links > * + * {
+  padding-top: 8px;
+}
+
+.knowledge-search-article-link.source-element-text {
+  white-space: normal;
+  line-height: 1.1rem;
+}
+
+/* Summarization */
+.summary__content {
+  max-height: unset;
+}
+
+.summary__content-wrapper {
+  padding: 0 16px !important;
+}
+
+.summary__content-details {
+  padding-top: 8px
+}
+
+section.summary__title-bar {
+  padding: 0 8px !important;
+}
+
+button.generate-summary {
+  margin: 8px;
+}
+
+.summary__title-bar-wrapper .mat-icon {
   line-height: 100%;
-  padding: 8px 4px 8px 12px;
 }
 
-.header h2 {
-  padding-bottom: 1px;
-  font:
-    500 20px/24px Google Sans,
-    Helvetica Neue,
-    sans-serif;
-}
-
-.header .google-logo {
-  margin: 0 4px 0 0;
-  width: 80px;
+.summary__content .mat-mdc-progress-spinner {
+  margin: 16px;
 }
 
 /* Transcript */
 .transcript-container {
   border: 1px solid #ddd;
-  margin-top: 8px;
+  flex: 1;
+  min-width: 240px;
+}
+
+.agent-assist-transcript > * {
+  max-height: unset;
 }
 
 .transcript-container h3 {
@@ -74,14 +125,21 @@ font:
   padding: 4.5px !important;
 }
 
-.mat-mdc-button > .mat-icon,
-.mat-mdc-unelevated-button > .mat-icon,
-.mat-mdc-raised-button > .mat-icon,
-.mat-mdc-outlined-button > .mat-icon {
-  height: 100%;
+/* Smart Reply */
+.content-wrapper .mat-mdc-chip-set .mdc-evolution-chip-set__chips {
+  margin-left: unset;
+}
+
+.content-wrapper .gmat-body-2.smart-reply__chip--empty {
+  margin: unset;
+  padding: 16px;
 }
 
 /* Load Error */
+.initialization-spinner-wrapper {
+  padding: 16px;
+}
+
 .load-error {
   border-radius: 4px;
   border: 1px solid hsl(5, 81%, 75%);
@@ -102,4 +160,18 @@ font:
   font-size: 12px;
   line-height: 18px;
   padding: 0 11px 7px 11px;
+}
+
+.empty-state {
+  background-color: #fafafa;
+  border-color: #dfdfdf;
+  flex: 1;
+}
+
+.empty-state h3, .empty-state p {
+  color: #777;
+}
+
+.hidden, lightning-conversation-toolkit-api {
+  display: none;
 }

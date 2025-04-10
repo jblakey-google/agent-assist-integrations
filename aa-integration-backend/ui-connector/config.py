@@ -50,6 +50,14 @@ JWT_TOKEN_LIFETIME = 60  # minutes
 #   5. 'Skip': skip auth token verification, should not be used in production.
 AUTH_OPTION = os.environ.get('AUTH_OPTION', '')
 
+# The option of authenticating apps when registering JWT. By default it's empty and
+# no apps are allowed to register JWT via UI Connector service.
+# Supported values:
+#   1. 'Twilio': Get Twilio API Account resource, using accountSid and authToken.
+#      See https://www.twilio.com/docs/iam/api/account#fetch-an-account-resource.
+#      Required environment variable: TWILIO_ACCOUNT_SID
+APP_AUTH_OPTION = os.environ.get('APP_AUTH_OPTION', '')
+
 # Salesforce configuration
 # For sandbox environment, please replace login.salesforce.com with test.salesforce.com.
 # For SalesforceLWC auth option, please replace login.salesforce.com with <your-salesforce-org-domain>.<org-type>.lightning.force.com.
@@ -61,3 +69,5 @@ GENESYS_CLOUD_ENVIRONMENT = os.environ.get('GENESYS_CLOUD_ENVIRONMENT', 'mypurec
 
 #Twilio configuration.
 TWILIO_FLEX_ENVIRONMENT = os.environ.get('TWILIO_FLEX_ENVIRONMENT', 'YOUR_DOMAIN.twil.io')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', 'YOUR_TWILIO_ACCOUNT_SID')
+TWILIO_ACCOUNTS_API_URL = f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}.json"

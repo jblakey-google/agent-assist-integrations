@@ -127,14 +127,8 @@
             'conversation-initialized',
             function (event) {
               if (event.detail.participants) {
-                console.log(
-                  'Customer participant: ',
-                  event.detail.participants.END_USER
-                );
-                console.log(
-                  'Agent participant: ',
-                  event.detail.participants.HUMAN_AGENT
-                );
+                console.log(`Customer participant: ${event.detail.participants.END_USER}`);
+                console.log(`Agent participant: ${event.detail.participants.HUMAN_AGENT}`);
               }
             }
           );

@@ -110,7 +110,7 @@ def cloud_pubsub_handler(request, data_type):
                 participant_role, new_recognition_result_message_id))
         if redis_client.exists(conversation_name) == 0:
             logging.warning(
-                'No SERVER_ID for conversation_name {}.'.format(conversation_name))
+                "No SERVER_ID (UI Connector instance) for conversation name {}. Please subscribe to the conversation by sending join-conversation event.".format(conversation_name))
             return True
         else:
             server_id = redis_client.get(conversation_name).decode('utf-8')

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,11 @@ if [[ $1 == 'generate-static-resources' ]]; then
     dir_path=force-app/main/default/staticresources/ui_modules
     file_path=${dir_path}/${file}.js
     mkdir -p ${dir_path}
-    curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > ${file_path}
+    rm -f ${file_path} # delete file if exists
+    rm -f ${file_path}.resource-meta.xml # delete file if exists
+    # TODO: When container.js is updated to v1.12 in mid-April 2025, use commented curl line instead of this.
+    curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js | sed -e 's/(c=b==null\?.*)};/c=""};/g' > $file_path
+    # curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > $file_path
     echo downloaded js and wrote ${file_path}
   done
   sf static-resource generate \
@@ -44,6 +48,19 @@ if [[ $1 == 'generate-static-resources' ]]; then
   #     --type application/javascript
   # curl --silent https://www.gstatic.com/agent-assist-ui-modules/v1/knowledge_assist.js > $file_path # Note the version - this is KA, not GKA.
   # echo downloaded js and wrote $file_path
+
+  # Socket.IO - https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js
+  # Uncomment below to add the Socket.IO client as a static resource.
+  file=socketio
+  file_path=force-app/main/default/staticresources/${file}.js
+  rm --force $file_path # delete file if exists
+  rm --force $file_path.resource-meta.xml # delete file if exists
+  sf static-resource generate \
+      --name ${file} \
+      --output-dir force-app/main/default/staticresources \
+      --type application/javascript
+  curl --silent https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js > $file_path
+  echo downloaded js and wrote $file_path
 
   # SVG Files
   # Place .svg files in the staticresources directory, then...

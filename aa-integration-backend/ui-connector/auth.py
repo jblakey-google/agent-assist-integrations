@@ -14,6 +14,7 @@
 
 import datetime
 import jwt
+import requests
 
 from flask import request, jsonify
 from functools import wraps
@@ -71,6 +72,17 @@ def generate_jwt(user_info=None):
                        'gcp_agent_assist_user': gcp_agent_assist_user},
                       jwt_secret_key,
                       'HS256')
+
+
+def check_app_auth(auth):
+    if config.APP_AUTH_OPTION == 'Twilio':
+        response = requests.get(
+            config.TWILIO_ACCOUNTS_API_URL, auth=(auth.get('accountSid'), auth.get('authToken')))
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('sid') == config.TWILIO_ACCOUNT_SID:
+                return True
+    return False
 
 
 def token_required(f):
