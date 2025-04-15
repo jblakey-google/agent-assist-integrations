@@ -25,7 +25,7 @@ if [[ $1 == 'generate-static-resources' ]]; then
     mkdir -p ${dir_path}
     rm -f ${file_path} # delete file if exists
     rm -f ${file_path}.resource-meta.xml # delete file if exists
-    curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > $file_path
+    curl --silent https://www.gstatic.com/agent-assist-ui-modules/v1/${file}.js > $file_path
     echo downloaded js and wrote ${file_path}
   done
   sf static-resource generate \
