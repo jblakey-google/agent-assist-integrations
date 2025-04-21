@@ -362,7 +362,8 @@ echo -e '\n\n ================= Create Cloud PubSub Topic ================== \n\
 
 conversation_lifecycle_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID"
 if [[ "$conversation_lifecycle_notifications_topic_name" = \
-  `gcloud pubsub topics list --filter=$CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID --format='value(name)'` ]]; then
+  `gcloud pubsub topics list --filter=$CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID \
+    --format='value(name)' | grep ^$CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID$` ]]; then
   echo "Skip creating Pub/Sub topic $CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID as it exists."
 else
   gcloud pubsub topics create $CONVERSATION_LIFECYCLE_NOTIFICATIONS_TOPIC_ID
@@ -370,7 +371,8 @@ fi
 
 agent_assist_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID"
 if [[ "$agent_assist_notifications_topic_name" = \
-  `gcloud pubsub topics list --filter=$AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID --format='value(name)'` ]]; then
+  `gcloud pubsub topics list --filter=$AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID \
+    --format='value(name)' | grep ^$AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID$` ]]; then
   echo "Skip creating Pub/Sub topic $AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID as it exists."
 else
   gcloud pubsub topics create $AGENT_ASSIST_NOTIFICATIONS_TOPIC_ID
@@ -378,7 +380,8 @@ fi
 
 new_message_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID"
 if [[ "$new_message_notifications_topic_name" = \
-  `gcloud pubsub topics list --filter=$NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID --format='value(name)'` ]]; then
+  `gcloud pubsub topics list --filter=$NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID \
+    --format='value(name)' | grep ^$NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID$` ]]; then
   echo "Skip creating Pub/Sub topic $NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID as it exists."
 else
   gcloud pubsub topics create $NEW_MESSAGE_NOTIFICATIONS_TOPIC_ID
@@ -387,7 +390,7 @@ fi
 new_recognition_result_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID"
 if [[ "$new_recognition_result_notifications_topic_name" = \
   `gcloud pubsub topics list --filter=$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID \
-    --format='value(name)' | grep ^$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID` ]]; then
+    --format='value(name)' | grep ^$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID$` ]]; then
   echo "Skip creating Pub/Sub topic $NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID as it exists."
 else
   gcloud pubsub topics create $NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID
