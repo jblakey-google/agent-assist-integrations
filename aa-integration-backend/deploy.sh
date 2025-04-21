@@ -164,7 +164,8 @@ echo -e '\n\n =========================== Create Service Accounts ==============
 # Create service account for UI Connector service runtime.
 connector_service_account="$CONNECTOR_SERVICE_ACCOUNT_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com"
 if [[ "$connector_service_account" = \
-  `gcloud iam service-accounts list --filter=$connector_service_account --format='value(EMAIL)'` ]]; then
+  `gcloud iam service-accounts list --filter=$connector_service_account \
+    --format='value(EMAIL)' | grep ^$connector_service_account$` ]]; then
   echo "Skip creating service account $connector_service_account as it exists."
 else
   gcloud iam service-accounts create $CONNECTOR_SERVICE_ACCOUNT_NAME \
@@ -197,7 +198,8 @@ gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
 # Create service account for Cloud Pub/Sub Interceptor service runtime.
 interceptor_service_account="$INTERCEPTOR_SERVICE_ACCOUNT_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com"
 if [[ "$interceptor_service_account" = \
-  `gcloud iam service-accounts list --filter=$interceptor_service_account --format='value(EMAIL)'` ]]; then
+  `gcloud iam service-accounts list --filter=$interceptor_service_account \
+    --format='value(EMAIL)' | grep ^$interceptor_service_account$` ]]; then
   echo "Skip creating service account $interceptor_service_account as it exists."
 else
   gcloud iam service-accounts create $INTERCEPTOR_SERVICE_ACCOUNT_NAME \
@@ -250,7 +252,7 @@ if [[ -z $VPC_CONNECTOR_NAME ]]; then
   echo "Skip creating Serverless VPC Access connector as Direct Egress is configured to connect to Redis."
 elif [[ $VPC_CONNECTOR_NAME = \
   `gcloud compute networks vpc-access connectors list --region=$SERVICE_REGION \
-    --filter=$VPC_CONNECTOR_NAME --format='value(CONNECTOR_ID)'` ]]; then
+    --filter=$VPC_CONNECTOR_NAME --format='value(CONNECTOR_ID)' | grep ^$VPC_CONNECTOR_NAME$` ]]; then
   echo "Skip creating Serverless VPC Access connector $VPC_CONNECTOR_NAME as it exists."
 else
   gcloud compute networks vpc-access connectors create $VPC_CONNECTOR_NAME \
@@ -384,7 +386,8 @@ fi
 
 new_recognition_result_notifications_topic_name="projects/$GCP_PROJECT_ID/topics/$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID"
 if [[ "$new_recognition_result_notifications_topic_name" = \
-  `gcloud pubsub topics list --filter=$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID --format='value(name)'` ]]; then
+  `gcloud pubsub topics list --filter=$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID \
+    --format='value(name)' | grep ^$NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID` ]]; then
   echo "Skip creating Pub/Sub topic $NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID as it exists."
 else
   gcloud pubsub topics create $NEW_RECOGNITION_RESULT_NOTIFICATION_TOPIC_ID
@@ -396,7 +399,8 @@ echo -e '\n\n ================= Configure Cloud PubSub Topic Subscriptions =====
 # Create a service account to represent the Pub/Sub subscription identity.
 pubsub_service_account="$CLOUD_RUN_PUBSUB_INVOKER_NAME@$GCP_PROJECT_ID.iam.gserviceaccount.com"
 if [[ "$pubsub_service_account" = \
-  `gcloud iam service-accounts list --filter=$pubsub_service_account --format='value(EMAIL)'` ]]; then
+  `gcloud iam service-accounts list --filter=$pubsub_service_account \
+    --format='value(EMAIL)' | grep ^$pubsub_service_account$` ]]; then
   echo "Skip creating service account $pubsub_service_account as it exists."
 else
   gcloud iam service-accounts create $CLOUD_RUN_PUBSUB_INVOKER_NAME \
@@ -416,7 +420,8 @@ interceptor_service_url=`echo $interceptor_service_info | head -4 | cut -d' ' -f
 # Create a subscription for the Pub/Sub topic you configured for new suggestions.
 new_suggestion_sub_name="projects/$GCP_PROJECT_ID/subscriptions/$AGENT_ASSIST_NOTIFICATIONS_SUBSCRIPTION_ID"
 if [[ "$new_suggestion_sub_name" = \
-  `gcloud pubsub subscriptions list --filter=$new_suggestion_sub_name --format='value(name)'` ]]; then
+  `gcloud pubsub subscriptions list --filter=$new_suggestion_sub_name \
+    --format='value(name)' | grep ^$new_suggestion_sub_name$` ]]; then
   gcloud pubsub subscriptions update $AGENT_ASSIST_NOTIFICATIONS_SUBSCRIPTION_ID \
     --expiration-period=never \
     --push-endpoint=$interceptor_service_url/human-agent-assistant-event \
@@ -432,7 +437,8 @@ fi
 # Create a subscription for the Pub/Sub topic you configured for new message events.
 new_message_sub_name="projects/$GCP_PROJECT_ID/subscriptions/$NEW_MESSAGE_NOTIFICATIONS_SUBSCRIPTION_ID"
 if [[ "$new_message_sub_name" = \
-  `gcloud pubsub subscriptions list --filter=$new_message_sub_name --format='value(name)'` ]]; then
+  `gcloud pubsub subscriptions list --filter=$new_message_sub_name \
+    --format='value(name)' | grep ^$new_message_sub_name$` ]]; then
   gcloud pubsub subscriptions update $NEW_MESSAGE_NOTIFICATIONS_SUBSCRIPTION_ID \
     --expiration-period=never \
     --push-endpoint=$interceptor_service_url/new-message-event \
@@ -448,7 +454,8 @@ fi
 # Create a subscription for the Pub/Sub topic you configured for conversation lifecycle events.
 conversation_event_sub_name="projects/$GCP_PROJECT_ID/subscriptions/$CONVERSATION_LIFECYCLE_NOTIFICATIONS_SUBSCRIPTION_ID"
 if [[ "$conversation_event_sub_name" = \
-  `gcloud pubsub subscriptions list --filter=$conversation_event_sub_name --format='value(name)'` ]]; then
+  `gcloud pubsub subscriptions list --filter=$conversation_event_sub_name \
+    --format='value(name)' | grep ^$conversation_event_sub_name$` ]]; then
   gcloud pubsub subscriptions update $CONVERSATION_LIFECYCLE_NOTIFICATIONS_SUBSCRIPTION_ID \
     --expiration-period=never \
     --push-endpoint=$interceptor_service_url/conversation-lifecycle-event \
@@ -466,7 +473,8 @@ fi
 # Create a subscription for the Pub/Sub topic you configured for new recognition result message events.
 new_recognition_result_notifications_sub="projects/$GCP_PROJECT_ID/subscriptions/$NEW_RECOGNITION_RESULT_NOTIFICATION_SUBSCRIPTION_ID"
 if [[ "$new_recognition_result_notifications_sub" = \
-  `gcloud pubsub subscriptions list --filter=$new_recognition_result_notifications_sub --format='value(name)'` ]]; then
+  `gcloud pubsub subscriptions list --filter=$new_recognition_result_notifications_sub \
+    --format='value(name)' | grep ^$new_recognition_result_notifications_sub$` ]]; then
   gcloud pubsub subscriptions update $NEW_RECOGNITION_RESULT_NOTIFICATION_SUBSCRIPTION_ID \
     --expiration-period=never \
     --push-endpoint=$interceptor_service_url/new-recognition-result-notification-event \
