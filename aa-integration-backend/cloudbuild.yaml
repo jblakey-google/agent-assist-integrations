@@ -39,5 +39,5 @@ steps:
   - 'ADMIN_ACCOUNT=$SERVICE_ACCOUNT_EMAIL'
   - 'AUTH_OPTION=Skip'
   - 'BACKEND_DIR=/aa-integration-backend'
-  - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-${BRANCH_NAME}'
-  - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${BRANCH_NAME}'
+  - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-`echo ${BRANCH_NAME} | sed "s/\//-/g"`'
+  - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-`echo ${BRANCH_NAME} | sed "s/\//-/g"`'
