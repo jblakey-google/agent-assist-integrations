@@ -223,7 +223,7 @@ gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
 echo -e '\n\n ===================== Create a JWT Secret Key ===================== \n\n'
 
 # Create or update a JWT secret key.
-if [[ $JWT_SECRET_NAME = `gcloud secrets list --filter=$JWT_SECRET_NAME --format='value(NAME)'` ]]; then
+if [[ $JWT_SECRET_NAME = `gcloud secrets list --filter=$JWT_SECRET_NAME --format='value(NAME)' | grep ^$JWT_SECRET_NAME$` ]]; then
   printf $JWT_SECRET_KEY | gcloud secrets versions add $JWT_SECRET_NAME --data-file=-
 else
   printf $JWT_SECRET_KEY | \
