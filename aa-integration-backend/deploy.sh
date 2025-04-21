@@ -45,6 +45,7 @@
 # How to run this script:
 #     cd aa-integration-backend/ && sh ./deploy.sh
 
+set -e  # exit the script with a non-zero status if any individual command fails.
 
 # TODO: Please update the following fields according to your existing resources.
 export GCP_PROJECT_ID=${GCP_PROJECT_ID:='your-project-id'}
