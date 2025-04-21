@@ -22,10 +22,14 @@ steps:
   - '-c'
   - |
       echo "***********************"
-      echo "$BRANCH_NAME"
-      echo "$PROJECT_ID"
-      echo "$SERVICE_ACCOUNT_EMAIL"
+      echo "BRANCH_NAME: ${BRANCH_NAME}"
+      echo "PROJECT_ID: ${PROJECT_ID}"
+      echo "SERVICE_ACCOUNT_EMAIL: ${SERVICE_ACCOUNT_EMAIL}"
       echo "***********************"
+      if [[ ! -v $BRANCH_NAME || ! -v $PROJECT_ID || ! -v $SERVICE_ACCOUNT_EMAIL ]]; then
+        echo "A required variable is not set, failing the build."
+        exit 1
+      fi
 
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
