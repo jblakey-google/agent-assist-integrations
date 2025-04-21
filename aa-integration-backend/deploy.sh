@@ -239,7 +239,7 @@ echo -e '\n\n ========================= Setup Memorystore for Redis ============
 # Create a Redis instance in the same region as your Cloud Run services.
 if [[ "$REDIS_INSTANCE_ID" = \
   `gcloud redis instances list --region=$SERVICE_REGION \
-    --filter=$REDIS_INSTANCE_ID --format='value(INSTANCE_NAME)'` ]]; then
+    --filter=$REDIS_INSTANCE_ID --format='value(INSTANCE_NAME)' | grep ^$REDIS_INSTANCE_ID$` ]]; then
   echo "Skip creating redis instance $REDIS_INSTANCE_ID as it exists."
 else
   gcloud redis instances create $REDIS_INSTANCE_ID --size=5 --region=$SERVICE_REGION --format=json
