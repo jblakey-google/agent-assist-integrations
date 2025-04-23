@@ -51,6 +51,7 @@ steps:
   - 'delete'
   - 'ui-connector-presubmit-${SHORT_SHA}'
   - '--region=$LOCATION'
+  - '--quiet'
 
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'gcloud'
@@ -60,3 +61,4 @@ steps:
   - 'delete'
   - 'cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
   - '--region=$LOCATION'
+  - '--quiet'
