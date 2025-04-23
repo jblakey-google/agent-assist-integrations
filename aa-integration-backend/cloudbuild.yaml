@@ -15,7 +15,7 @@
 # An example of Cloud Build configuration file to run deployment script for CI/CD pipeline.
 
 steps:
-- id: 'branch name'
+- id: 'Check required variables'
   name: 'alpine'
   entrypoint: 'sh'
   args:
@@ -27,23 +27,25 @@ steps:
       echo "PROJECT_ID: ${PROJECT_ID}"
       echo "SERVICE_ACCOUNT_EMAIL: ${SERVICE_ACCOUNT_EMAIL}"
       echo "***********************"
-      if [[ ! -v $BRANCH_NAME || ! -v $PROJECT_ID || ! -v $SERVICE_ACCOUNT_EMAIL ]]; then
+      if [[ ! -v $BRANCH_NAME || ! -v SHORT_SHA || ! -v $PROJECT_ID || ! -v $SERVICE_ACCOUNT_EMAIL ]]; then
         echo "A required variable is not set, failing the build."
         exit 1
       fi
 
-# - name: 'gcr.io/cloud-builders/gcloud'
-#   entrypoint: 'bash'
-#   args: ['aa-integration-backend/deploy.sh']
-#   env:
-#   - 'GCP_PROJECT_ID=$PROJECT_ID'
-#   - 'ADMIN_ACCOUNT=$SERVICE_ACCOUNT_EMAIL'
-#   - 'AUTH_OPTION=Skip'
-#   - 'BACKEND_DIR=/aa-integration-backend'
-#   - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-${SHORT_SHA}'
-#   - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'Deploy Agent Assist integration backend'
+  entrypoint: 'bash'
+  args: ['aa-integration-backend/deploy.sh']
+  env:
+  - 'GCP_PROJECT_ID=$PROJECT_ID'
+  - 'ADMIN_ACCOUNT=$SERVICE_ACCOUNT_EMAIL'
+  - 'AUTH_OPTION=Skip'
+  - 'BACKEND_DIR=/aa-integration-backend'
+  - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-${SHORT_SHA}'
+  - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
 
 - name: 'gcr.io/cloud-builders/gcloud'
+  id: 'Delete UI Connector Cloud Run service'
   entrypoint: 'gcloud'
   args:
   - 'run'
@@ -54,6 +56,7 @@ steps:
   - '--quiet'
 
 - name: 'gcr.io/cloud-builders/gcloud'
+  id: 'Delete Pub/Sub Interceptor Cloud Run service'
   entrypoint: 'gcloud'
   args:
   - 'run'
