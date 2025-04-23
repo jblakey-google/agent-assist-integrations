@@ -27,7 +27,7 @@ steps:
       echo "PROJECT_ID: ${PROJECT_ID}"
       echo "SERVICE_ACCOUNT_EMAIL: ${SERVICE_ACCOUNT_EMAIL}"
       echo "***********************"
-      if [[ ! -v $BRANCH_NAME || ! -v SHORT_SHA || ! -v $PROJECT_ID || ! -v $SERVICE_ACCOUNT_EMAIL ]]; then
+      if [[ ! -v $BRANCH_NAME || ! -v $SHORT_SHA || ! -v $PROJECT_ID || ! -v $SERVICE_ACCOUNT_EMAIL ]]; then
         echo "A required variable is not set, failing the build."
         exit 1
       fi
@@ -45,23 +45,27 @@ steps:
   - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: 'Delete UI Connector Cloud Run service'
+  id: 'Clean up UI Connector Cloud Run service'
   entrypoint: 'gcloud'
+  env:
+  - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-${SHORT_SHA}'
   args:
   - 'run'
   - 'services'
   - 'delete'
-  - 'ui-connector-presubmit-${SHORT_SHA}'
+  - '$CONNECTOR_SERVICE_NAME'
   - '--region=$LOCATION'
   - '--quiet'
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: 'Delete Pub/Sub Interceptor Cloud Run service'
+  id: 'Clean up Pub/Sub Interceptor Cloud Run service'
   entrypoint: 'gcloud'
+  env:
+  - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
   args:
   - 'run'
   - 'services'
   - 'delete'
-  - 'cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
+  - '$INTERCEPTOR_SERVICE_NAME'
   - '--region=$LOCATION'
   - '--quiet'
