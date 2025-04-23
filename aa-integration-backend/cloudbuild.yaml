@@ -47,25 +47,21 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'Clean up UI Connector Cloud Run service'
   entrypoint: 'gcloud'
-  env:
-  - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-${SHORT_SHA}'
   args:
   - 'run'
   - 'services'
   - 'delete'
-  - '$CONNECTOR_SERVICE_NAME'
+  - 'ui-connector-presubmit-${SHORT_SHA}'
   - '--region=$LOCATION'
   - '--quiet'
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'Clean up Pub/Sub Interceptor Cloud Run service'
   entrypoint: 'gcloud'
-  env:
-  - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
   args:
   - 'run'
   - 'services'
   - 'delete'
-  - '$INTERCEPTOR_SERVICE_NAME'
+  - 'cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
   - '--region=$LOCATION'
   - '--quiet'
