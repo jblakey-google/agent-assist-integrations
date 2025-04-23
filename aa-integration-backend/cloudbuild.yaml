@@ -44,12 +44,9 @@ steps:
   - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: 'bash'
-  args: ['aa-integration-backend/teardown.sh']
-  env:
-  - 'GCP_PROJECT_ID=$PROJECT_ID'
-  - 'ADMIN_ACCOUNT=$SERVICE_ACCOUNT_EMAIL'
-  - 'AUTH_OPTION=Skip'
-  - 'BACKEND_DIR=/aa-integration-backend'
-  - 'CONNECTOR_SERVICE_NAME=ui-connector-presubmit-${SHORT_SHA}'
-  - 'INTERCEPTOR_SERVICE_NAME=cloud-pubsub-interceptor-presubmit-${SHORT_SHA}'
+  entrypoint: 'gcloud'
+  args: ['run', 'services', 'delete', 'ui-connector-presubmit-${SHORT_SHA}']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'gcloud'
+  args: ['run', 'services', 'delete', 'cloud-pubsub-interceptor-presubmit-${SHORT_SHA}']
