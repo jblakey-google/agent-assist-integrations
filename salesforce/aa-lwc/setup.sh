@@ -16,36 +16,40 @@
 if [[ $1 == 'generate-static-resources' ]]; then
   # UI Modules Javascript
   # https://cloud.google.com/agent-assist/docs/ui-modules#agent-assist-features
-  # Uncomment below to download JS for individual UI Modules
 
-  for file in container transcript # summarization smart_reply knowledge_assist
-  do
-    dir_path=force-app/main/default/staticresources/ui_modules
-    file_path=${dir_path}/${file}.js
-    mkdir -p ${dir_path}
-    rm -f ${file_path} # delete file if exists
-    rm -f ${file_path}.resource-meta.xml # delete file if exists
-    curl --silent https://www.gstatic.com/agent-assist-ui-modules/v1/${file}.js > $file_path
-    echo downloaded js and wrote ${file_path}
-  done
+  # create ui_modules directory
+  dir_path=force-app/main/default/staticresources/ui_modules
+  mkdir -p ${dir_path}
+
+  # download transcript.js
+  file='transcript'
+  file_path=${dir_path}/${file}.js
+  rm -f ${file_path} # delete file if exists
+  rm -f ${file_path}.resource-meta.xml # delete file if exists
+  curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > $file_path
+  echo downloaded js and wrote ${file_path}
+
+  # download container.js
+  file='container'
+  file_path=${dir_path}/${file}.js
+  rm -f ${file_path} # delete file if exists
+  rm -f ${file_path}.resource-meta.xml # delete file if exists
+  curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2/${file}.js > $file_path
+  echo downloaded js and wrote ${file_path}
+
+  # download common.js
+  file='common'
+  file_path=${dir_path}/${file}.js
+  rm -f ${file_path} # delete file if exists
+  rm -f ${file_path}.resource-meta.xml # delete file if exists
+  curl --silent https://www.gstatic.com/agent-assist-ui-modules/latest/${file}.js > $file_path
+  echo downloaded js and wrote ${file_path}
+
+  # create a zip of the ui_modules directory. This avoids Salesforce size limits.
   sf static-resource generate \
     --name ui_modules \
     --output-dir force-app/main/default/staticresources \
     --type application/zip
-
-  # UI Modules - Knowledge Assist (not GKA) Javascript
-  # https://cloud.google.com/agent-assist/docs/ui-modules-knowledge-assist-documentation
-  # Uncomment below to download JS for Knowledge Assist (non-generative version)
-  # file=knowledge_assist_v1
-  # file_path=force-app/main/default/staticresources/${file}.js
-  # rm --force $file_path # delete file if exists
-  # rm --force $file_path.resource-meta.xml # delete file if exists
-  # sf static-resource generate \
-  #     --name ${file} \
-  #     --output-dir force-app/main/default/staticresources \
-  #     --type application/javascript
-  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/v1/knowledge_assist.js > $file_path # Note the version - this is KA, not GKA.
-  # echo downloaded js and wrote $file_path
 
   # Socket.IO - https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js
   # Uncomment below to add the Socket.IO client as a static resource.

@@ -44,7 +44,7 @@ export default class AgentAssistContainerModule extends LightningElement {
   @api consumerKey; // SF Connected App Consumer Key
   @api consumerSecret; // SF Connected App Consumer Secret
 
-  debugMode = false;
+  debugMode = true;
   googleLogoUrl = google_logo;
   token = null;
   conversationId = null;
@@ -75,8 +75,10 @@ export default class AgentAssistContainerModule extends LightningElement {
     if (this.loadError) return;
     await Promise.all([
       loadScript(this, ui_modules + "/container.js"),
-      loadScript(this, ui_modules + "/transcript.js")
+      loadScript(this, ui_modules + "/transcript.js"),
+      loadScript(this, ui_modules + "/common.js")
     ]);
+    console.log('loaded scripts without issue')
     try {
       this.token = await integration.registerAuthToken(
         this.consumerKey,
@@ -142,72 +144,80 @@ export default class AgentAssistContainerModule extends LightningElement {
         ".agent-assist-transcript"
       );
       const transcriptEl = document.createElement("agent-assist-transcript");
-      transcriptEl.setAttribute("namespace", this.recordId);
+      // transcriptEl.setAttribute("namespace", this.recordId);
       transcriptContainerEl.appendChild(transcriptEl);
     }
 
     // Create container element
-    const containerEl = document.createElement("agent-assist-ui-modules");
+    const containerEl = document.createElement("agent-assist-ui-modules-v2");
     // Lightning Web Security blocks access to document.fullscreenElement,
     // which is needed for default UI Module copy to clipboard functionality.
     // Setting this causes copy-to-clipboard events to be emitted, which the
     // LWC then handles in integration.handleCopyToClipboard.
     containerEl.generalConfig = { clipboardMode: "EVENT_ONLY" };
+    // containerEl.setAttribute('namespace', this.recordId);
+    containerEl.classList.add('agent-assist-ui-modules')
+    containerEl.features=this.features
     const containerContainerEl = this.template.querySelector(
       ".agent-assist-container"
     );
-    let attributes = [
-      ["namespace", this.recordId],
-      ["custom-api-endpoint", this.endpoint],
-      ["channel", this.channel],
-      ["agent-desktop", "Custom"],
-      ["features", this.features],
-      ["conversation-profile", this.conversationProfile],
-      ["auth-token", this.token],
-      ["omit-script-nonce", "true"]
-    ];
-    if (this.channel === "voice") {
-      attributes.push(["notifier-server-endpoint", this.endpoint]);
-      attributes.push(["event-based-library", "SocketIo"]);
+
+    const connector = new UiModulesConnector()
+    const config = {}
+    config.channel = this.channel
+    config.agentDesktop = 'Custom'
+    config.conversationProfileName = this.conversationProfile
+    config.apiConfig = {}
+    config.apiConfig.authToken = this.token
+    config.apiConfig.customApiEndpoint = this.endpoint
+    // config.features = this.features
+    // config.uiModuleEventOptions = {}
+    // config.uiModuleEventOptions.namespace = this.recordId
+    if (this.channel === 'voice') {
+      config.eventBasedConfig = {}
+      config.eventBasedConfig.notifierServerEndpoint = this.endpoint;
+      config.eventBasedConfig.library = 'SocketIo';
     }
-    attributes.forEach((attr) => containerEl.setAttribute(attr[0], attr[1]));
 
     const initializeUIM = () => {
-      containerContainerEl.appendChild(containerEl);
-      // Make the UiM elements visible and hide the empty state
-      containerContainerEl.classList.remove("hidden");
 
+      containerContainerEl.appendChild(containerEl);
+      connector.init(config);
+      console.log(connector)
+
+      // Make the UiM elements visible and hide the empty state
+      // containerContainerEl.classList.remove("hidden");
       if (this.showTranscript) {
         // Make dynamic layout adjustments for transcript
         const transcriptContainerEl = this.template.querySelector(
           ".transcript-container"); // left
         transcriptContainerEl.classList.remove("hidden");
 
-        const agentAssistComponentEl = this.template.querySelector('.agent-assist-component')
-        const agentAssistContainerEl = this.template.querySelector(
-          ".agent-assist-container"); // right
-        const transcriptHeaderEl = transcriptContainerEl.querySelector('h3')
-        const transcriptConversationEl = transcriptContainerEl.querySelector('.conversation-container')
+        // const agentAssistComponentEl = this.template.querySelector('.agent-assist-component')
+        // const agentAssistContainerEl = this.template.querySelector(
+        //   ".agent-assist-container"); // right
+        // const transcriptHeaderEl = transcriptContainerEl.querySelector('h3')
+        // const transcriptConversationEl = transcriptContainerEl.querySelector('.conversation-container')
 
-        // Watch for resizes on modules and match transcript to  combined height
-        const resizeObserver = new ResizeObserver(_ => {
-          // Check if the transcript is taking the full width of the component
-          if (parseInt(agentAssistComponentEl.clientWidth / transcriptConversationEl.clientWidth) === 1) {
-            // Transcript is taking full width
-            transcriptConversationEl.style.height = 'unset'
-            transcriptConversationEl.style.maxHeight = 'calc(-20px + 25vh)'
-          } else {
-            // 'Transcript is not taking full width'
-            transcriptConversationEl.style.height = '0px'
-            transcriptConversationEl.style.maxHeight = 'unset'
-            let newHeight = agentAssistContainerEl.scrollHeight - transcriptHeaderEl.scrollHeight - 3
-            transcriptConversationEl.style.height = `${newHeight}px`
-          }
-        })
-        const moduleWrappers = this.template.querySelectorAll('module-wrapper')
-        moduleWrappers.forEach(wrapper => resizeObserver.observe(wrapper))
+        // // Watch for resizes on modules and match transcript to  combined height
+        // const resizeObserver = new ResizeObserver(_ => {
+        //   // Check if the transcript is taking the full width of the component
+        //   if (parseInt(agentAssistComponentEl.clientWidth / transcriptConversationEl.clientWidth) === 1) {
+        //     // Transcript is taking full width
+        //     transcriptConversationEl.style.height = 'unset'
+        //     transcriptConversationEl.style.maxHeight = 'calc(-20px + 25vh)'
+        //   } else {
+        //     // 'Transcript is not taking full width'
+        //     transcriptConversationEl.style.height = '0px'
+        //     transcriptConversationEl.style.maxHeight = 'unset'
+        //     let newHeight = agentAssistContainerEl.scrollHeight - transcriptHeaderEl.scrollHeight - 3
+        //     transcriptConversationEl.style.height = `${newHeight}px`
+        //   }
+        // })
+        // const moduleWrappers = this.template.querySelectorAll('module-wrapper')
+        // moduleWrappers.forEach(wrapper => resizeObserver.observe(wrapper))
 
-        // Auto-scroll the transcript when new messages appear
+        // // Auto-scroll the transcript when new messages appear
         const mutationObserver = new MutationObserver((records, observer) => {
           for (record of records) {
             let last = record.addedNodes[record.addedNodes.length - 1];
@@ -250,19 +260,20 @@ export default class AgentAssistContainerModule extends LightningElement {
         }, 5000);
       }
     }
+    console.log('reached end of renderedCallback')
   }
 
   initAgentAssistEvents() {
     addAgentAssistEventListener(
       "api-connector-initialized",
-      (event) =>
+      (event) => {
         integration.handleApiConnectorInitialized(
           event,
           this.debugMode,
           this.conversationName,
           this.recordId
-        ),
-      { namespace: this.recordId }
+        )
+      }
     );
     addAgentAssistEventListener(
       "conversation-initialized",
@@ -279,7 +290,9 @@ export default class AgentAssistContainerModule extends LightningElement {
           );
         }
       },
-      { namespace: this.recordId }
+      {
+        // namespace: this.recordId
+      }
     );
     addAgentAssistEventListener(
       "smart-reply-selected",
@@ -289,7 +302,9 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.refs.lwcToolKitApi,
           this.recordId
         ),
-      { namespace: this.recordId }
+      {
+        // namespace: this.recordId
+      }
     );
     addAgentAssistEventListener(
       "agent-coaching-response-selected",
@@ -299,12 +314,16 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.refs.lwcToolKitApi,
           this.recordId
         ),
-      { namespace: this.recordId }
+      {
+        // namespace: this.recordId
+      }
     );
     addAgentAssistEventListener(
       "copy-to-clipboard",
       (event) => integration.handleCopyToClipboard(event, this.debugMode),
-      { namespace: this.recordId }
+      {
+        // namespace: this.recordId
+      }
     );
     if (this.channel === "voice") {
       addAgentAssistEventListener(
@@ -313,7 +332,9 @@ export default class AgentAssistContainerModule extends LightningElement {
           dispatchAgentAssistEvent(
             "conversation-summarization-requested",
             { detail: { conversationName: this.conversationName } },
-            { namespace: this.recordId }
+            {
+              // namespace: this.recordId
+            }
           );
           await conversationName.delConversationName(
             this.token,
@@ -321,7 +342,9 @@ export default class AgentAssistContainerModule extends LightningElement {
             this.contactPhone
           );
         },
-        { namespace: this.recordId }
+        {
+          // namespace: this.recordId
+        }
       );
     }
   }

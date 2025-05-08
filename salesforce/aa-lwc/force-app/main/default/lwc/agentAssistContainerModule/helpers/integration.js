@@ -90,7 +90,9 @@ export function handleApiConnectorInitialized(
         conversationName: conversationName
       }
     },
-    { namespace: recordId }
+    {
+      // namespace: recordId
+    }
   );
 }
 
@@ -121,7 +123,9 @@ function listMessagesResponseReceivedHandler(
           request: { textInput: { text: msg.content } }
         }
       },
-      { namespace: recordId }
+      {
+        // namespace: recordId
+      }
     );
   });
 }
@@ -151,14 +155,18 @@ export async function reconcileConversationLogs(
         conversationId,
         recordId
       ),
-    { namespace: recordId }
+    {
+      // namespace: recordId
+    }
   );
 
   // Request DF messages
   dispatchAgentAssistEvent(
     "list-messages-requested",
     { detail: { conversationName: conversationName } },
-    { namespace: recordId }
+    {
+      // namespace: recordId
+    }
   );
 }
 
@@ -253,7 +261,9 @@ export function initEventDragnet(recordId) {
     addAgentAssistEventListener(
       eventName,
       (event) => console.log("initEventDragnet - heard:", event),
-      { namespace: recordId }
+      {
+        // namespace: recordId
+      }
     );
   });
 }
