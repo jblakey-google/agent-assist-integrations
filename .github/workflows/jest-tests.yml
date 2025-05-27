@@ -1,0 +1,39 @@
+name: LWC Jest Tests
+
+on:
+  push:
+    branches: [ main ] # Or your default branch, e.g., master
+  pull_request:
+    branches: [ main ] # Or your default branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Specify a version, ensure it's compatible with your project
+
+      - name: Install Salesforce CLI (SFDX)
+        run: |
+          npm install sfdx-cli --global
+          # Authenticate with a dev hub or scratch org if needed for tests,
+          # though for LWC Jest tests, this is often not required unless tests depend on org data.
+          # For now, we'll assume tests are self-contained.
+
+      - name: Install project dependencies
+        # Assuming your LWC project's package.json is in salesforce/aa-lwc
+        working-directory: ./salesforce/aa-lwc
+        run: npm ci # 'ci' is generally preferred for CI environments
+
+      - name: Run Jest tests
+        working-directory: ./salesforce/aa-lwc
+        run: npm test
+        env:
+          # Add any environment variables required by your tests if any
+          CI: true

@@ -67,7 +67,7 @@ function handleMessageSend(
         request: {
           textInput: {
             text: message.content,
-            languageCode: "us"
+          languageCode: "us"
           }
         }
       }
@@ -82,23 +82,30 @@ function subscribeToMessageChannel(messageContext, channel, handler) {
   });
 }
 
+let subscriptions = {};
+
 export function subscribeToMessageChannels(
   recordId, debugMode, conversationName, features,
   conversationId, messageContext) {
 
-  subscribeToMessageChannel(
+  if (!messageContext) {
+    console.error('MessageContext is not available.');
+    return;
+  }
+
+  subscriptions.conversationAgentSend = subscribeToMessageChannel(
     messageContext,
     conversationAgentSendChannel,
     (event) => handleMessageSend(
       'HUMAN_AGENT', event, recordId, debugMode, conversationId)
   );
-  subscribeToMessageChannel(
+  subscriptions.conversationEndUserMessage = subscribeToMessageChannel(
     messageContext,
     conversationEndUserMessageChannel,
     (event) => handleMessageSend(
       'END_USER', event, recordId, debugMode, conversationId)
   );
-  subscribeToMessageChannel(
+  subscriptions.conversationEnded = subscribeToMessageChannel(
     messageContext,
     conversationEndedChannel,
     (event) => handleConversationEnded(
@@ -106,14 +113,19 @@ export function subscribeToMessageChannels(
   );
 }
 
-function unsubscribeToMessageChannel(subscription) {
-  unsubscribe(subscription);
-  subscription = null;
-}
 export function unsubscribeToMessageChannels() {
-  unsubscribeToMessageChannel(conversationAgentSendChannel);
-  unsubscribeToMessageChannel(conversationEndUserMessageChannel);
-  unsubscribeToMessageChannel(conversationEndedChannel);
+  if (subscriptions.conversationAgentSend) {
+    unsubscribe(subscriptions.conversationAgentSend);
+    subscriptions.conversationAgentSend = null;
+  }
+  if (subscriptions.conversationEndUserMessage) {
+    unsubscribe(subscriptions.conversationEndUserMessage);
+    subscriptions.conversationEndUserMessage = null;
+  }
+  if (subscriptions.conversationEnded) {
+    unsubscribe(subscriptions.conversationEnded);
+    subscriptions.conversationEnded = null;
+  }
 }
 
 export default {
