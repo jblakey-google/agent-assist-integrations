@@ -21,6 +21,45 @@ This product is covered by the [Pre-GA Offerings Terms](https://cloud.google.com
 
 <br>
 
+## Project Structure
+
+This repository is organized into several main directories, each serving a specific purpose. Here's an overview of the project structure:
+
+*   **`aa-integration-backend/`**: Contains the backend integration code for Agent Assist. This includes services for connecting to various CRM platforms and handling communication with the Agent Assist API.
+*   **`genesyscloud/`**: Holds the specific integration code and components for the Genesys Cloud platform. This includes UI modules and connectors tailored for Genesys Cloud.
+*   **`liveperson/`**: Contains the integration code and components for the LivePerson platform. This includes UI modules and connectors designed to work within the LivePerson agent desktop.
+*   **`salesforce/`**: Holds the specific integration code and components for the Salesforce platform. This includes UI modules and connectors for embedding Agent Assist features into Salesforce.
+*   **`twilioflex/`**: Contains the integration code and components for the Twilio Flex platform. This includes UI modules and connectors for integrating Agent Assist with Twilio Flex.
+*   **`docs/`**: This directory contains documentation files, including images and diagrams, used in the main README.md and other documentation.
+
+<br>
+
+## Platform Integrations
+
+The Agent Assist modules are designed to be integrated into various agent desktop platforms. We provide reference implementations and specific guidance for the following platforms:
+
+*   **[Genesys Cloud](./genesyscloud/README.md)**: Integration guide and components for Genesys Cloud.
+*   **[LivePerson](./liveperson/README.md)**: Integration guide and components for LivePerson.
+*   **[Salesforce](./salesforce/aa-lwc/README.md)**: Integration guide and Lightning Web Components for Salesforce.
+*   **[Twilio Flex](./twilioflex/README.md)**: Integration guide and components for Twilio Flex.
+
+Each link above will take you to the specific README.md file for that platform, providing detailed instructions on how to set up and use Agent Assist modules within that environment.
+
+<br>
+
+## Backend Services
+
+The `aa-integration-backend` directory contains the backend infrastructure designed to support the Agent Assist UI modules. These services are responsible for handling communication between the agent desktop, Google Cloud services like Dialogflow and Pub/Sub, and the Agent Assist UI components. Key components include:
+
+*   **UI Connector**: Manages WebSocket connections with agent desktops, handles authentication, and proxies requests to Dialogflow.
+*   **Cloud Pub/Sub Interceptor**: Processes event notifications from Dialogflow via Cloud Pub/Sub and forwards them to the appropriate UI Connector instance.
+
+These services facilitate real-time event handling, such as receiving Agent Assist suggestions and conversation lifecycle events, as well as processing feedback signals from the agent desktop back to Dialogflow.
+
+For a comprehensive understanding of the backend architecture, deployment, and API details, please refer to the [aa-integration-backend/readme.md](./aa-integration-backend/readme.md).
+
+<br>
+
 ## High-level approach
 
 There are two primary approaches for integrating the Agent Assist modules into your application - the managed container approach, or as individually imported components. 
@@ -641,3 +680,17 @@ interface UiModuleContainerConfig {
   knowledgeAssistConfig?: KnowledgeAssistConfig;
 }
 ```
+
+<br>
+
+## Contributing
+
+Contributions to the Agent Assist Modules project are welcome! We value your input and efforts to improve this project.
+
+For detailed information on how to contribute, including our coding standards, branch management, and pull request process, please refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
+
+<br>
+
+## License
+
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](./LICENSE) file for the full license text.
