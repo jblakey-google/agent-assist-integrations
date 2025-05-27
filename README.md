@@ -500,7 +500,7 @@ interface ConversationInitializedPayload {
 
 #### <b>ConversationModel</b>
 
-See [API documentation](https://cloud.google.com/dialogflow/priv/docs/reference/rest/v2/projects.conversationModels#resource:-conversationmodel).
+See [API documentation](https://cloud.google.com/dialogflow/priv/docs/reference/rest/v2beta1/projects.conversationModels#resource:-conversationmodel)
 
 #### <b>ConversationModelRequestedPayload</b>
 
