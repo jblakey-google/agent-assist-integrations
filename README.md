@@ -430,9 +430,9 @@ interface ActiveConversationSelectedPayload {
 }
 ```
 
-#### <b>AnalyzeContentResponse</b>
+#### <b>AnalyzeContentRequest</b>
 
-See [API documentation](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/AnalyzeContentResponse).
+See [API documentation](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.conversations.participants/analyzeContent).
 
 #### <b>AnalyzeContentRequestDetails</b>
 
@@ -500,7 +500,7 @@ interface ConversationInitializedPayload {
 
 #### <b>ConversationModel</b>
 
-See [API documentation](https://cloud.google.com/dialogflow/priv/docs/reference/rest/v2beta1/projects.conversationModels#resource:-conversationmodel)
+See [API documentation](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.conversationModels#ConversationModel).
 
 #### <b>ConversationModelRequestedPayload</b>
 
@@ -632,7 +632,7 @@ interface SuggestionFeatureSelection {
 
 #### <b>SuggestConversationSummaryResponse</b>
 
-See [private API documentation](https://cloud.google.com/dialogflow/priv/docs/reference/rest/v2beta1/SuggestConversationSummaryResponse).
+See [API documentation](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/SuggestConversationSummaryResponse).
 
 #### <b>SuggestionFeatureType</b>
 
