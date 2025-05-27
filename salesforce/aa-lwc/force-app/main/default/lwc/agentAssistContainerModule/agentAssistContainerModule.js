@@ -253,7 +253,7 @@ export default class AgentAssistContainerModule extends LightningElement {
   }
 
   initAgentAssistEvents() {
-    addAgentAssistEventListener(
+    window.addAgentAssistEventListener(
       "api-connector-initialized",
       (event) =>
         integration.handleApiConnectorInitialized(
@@ -264,7 +264,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         ),
       { namespace: this.recordId }
     );
-    addAgentAssistEventListener(
+    window.addAgentAssistEventListener(
       "conversation-initialized",
       (event) => {
         this.participants = event.detail.participants;
@@ -281,7 +281,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       },
       { namespace: this.recordId }
     );
-    addAgentAssistEventListener(
+    window.addAgentAssistEventListener(
       "smart-reply-selected",
       (event) =>
         integration.handleSmartReplySelected(
@@ -291,7 +291,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         ),
       { namespace: this.recordId }
     );
-    addAgentAssistEventListener(
+    window.addAgentAssistEventListener(
       "agent-coaching-response-selected",
       (event) =>
         integration.handleAgentCoachingResponseSelected(
@@ -301,16 +301,16 @@ export default class AgentAssistContainerModule extends LightningElement {
         ),
       { namespace: this.recordId }
     );
-    addAgentAssistEventListener(
+    window.addAgentAssistEventListener(
       "copy-to-clipboard",
       (event) => integration.handleCopyToClipboard(event, this.debugMode),
       { namespace: this.recordId }
     );
     if (this.channel === "voice") {
-      addAgentAssistEventListener(
+      window.addAgentAssistEventListener(
         "conversation-completed",
         async () => {
-          dispatchAgentAssistEvent(
+          window.dispatchAgentAssistEvent(
             "conversation-summarization-requested",
             { detail: { conversationName: this.conversationName } },
             { namespace: this.recordId }
