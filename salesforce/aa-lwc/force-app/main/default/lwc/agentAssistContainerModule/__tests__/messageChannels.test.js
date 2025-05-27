@@ -211,7 +211,6 @@ describe('messageChannels', () => {
         'CONVERSATION_SUMMARIZATION,OTHER_FEATURE', // Features
         mockConversationId,
         mockMessageContext
-        mockMessageContext
       );
 
       const conversationEndedHandler = mockSubscribe.mock.calls.find(call => call[1] === 'mockedConversationEndedChannel')[2];
@@ -233,8 +232,7 @@ describe('messageChannels', () => {
         mockConversationName,
         'OTHER_FEATURE,ANOTHER_FEATURE', // Features
         mockConversationId,
-        mockMessageContext,
-        mockLanguageCode
+        mockMessageContext
       );
 
       const conversationEndedHandler = mockSubscribe.mock.calls.find(call => call[1] === 'mockedConversationEndedChannel')[2];
