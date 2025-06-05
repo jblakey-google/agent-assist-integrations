@@ -105,12 +105,9 @@ steps:
   args:
   - '-c'
   - |
-      if [ -d "environments/$BRANCH_NAME/" ]; then
-        cd environments/$BRANCH_NAME
-        terraform destroy -auto-approve
-      else
-        echo "***************************** SKIPPING DESTROYING *******************************"
-        echo "Branch '$BRANCH_NAME' does not represent an official environment."
-        echo "*********************************************************************************"
-      fi
+      cd ./aa-integration-backend/terraform
+      echo ""
+      echo "*************** TERRAFORM DESTROYING ******************"
+      terraform apply -auto-approve
+      echo "*************** TERRAFORM DESTROY COMPLETE ******************"
 # [END tf-destroy]
