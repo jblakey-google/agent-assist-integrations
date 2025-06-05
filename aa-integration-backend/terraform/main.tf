@@ -37,6 +37,7 @@ resource "google_service_account" "connector_service_account" {
   project    = var.gcp_project_id
   account_id = var.connector_service_account_name
   create_ignore_already_exists = true
+  
 }
 
 # Add necessary IAM roles for UI Connector service account.
@@ -116,6 +117,7 @@ resource "google_cloud_run_v2_service" "ui_connector" {
   project      = var.gcp_project_id
   name         = var.connector_service_name
   location     = var.service_region
+  deletion_protection = false
   launch_stage = "BETA"
   client       = "terraform"
 
@@ -189,6 +191,7 @@ resource "google_cloud_run_v2_service" "cloud_pubsub_interceptor" {
   project      = var.gcp_project_id
   name         = var.interceptor_service_name
   location     = var.service_region
+  deletion_protection = false
   client       = "terraform"
   launch_stage = "BETA"
   ingress      = "INGRESS_TRAFFIC_INTERNAL_ONLY"
