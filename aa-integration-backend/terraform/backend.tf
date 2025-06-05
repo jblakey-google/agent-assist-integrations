@@ -15,6 +15,6 @@
 
 terraform {
   backend "gcs" {
-    # bucket = "your-gcs-bucket"
+    bucket = "aa-integration-backend-terraform-jblakey-tfstate"
   }
 }
