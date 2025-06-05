@@ -102,7 +102,7 @@ steps:
 - id: 'tf destroy'
   name: 'hashicorp/terraform:1.0.0'
   entrypoint: 'sh'
-  args:gs
+  args:
   - '-c'
   - |
       cd ./aa-integration-backend/terraform
