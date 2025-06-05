@@ -112,7 +112,7 @@ steps:
       if [ $BRANCH_NAME != 'main' ]; then
         auth_option="Skip"
       fi
-      terraform apply -auto-approve \
+      terraform destroy -auto-approve \
         -var="gcp_project_id=$PROJECT_ID" \
         -var="ui_connector_docker_image=gcr.io/$PROJECT_ID/aa-integration-backend/ui-connector-$BRANCH_NAME:$SHORT_SHA" \
         -var="cloud_pubsub_interceptor_docker_image=gcr.io/$PROJECT_ID/aa-integration-backend/cloud-pubsub-interceptor-$BRANCH_NAME:$SHORT_SHA" \
