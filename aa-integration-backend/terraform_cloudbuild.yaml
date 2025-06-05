@@ -46,7 +46,9 @@ steps:
       cd ./aa-integration-backend/terraform
       echo ""
       echo "*************** TERRAFORM INIT ******************"
-      tf_state_bucket="$PROJECT_ID-tfstate"
+      # tf_state_bucket="$PROJECT_ID-tfstate"
+      tf_state_bucket="aa-integration-backend-terraform-jblakey-tfstate"
+      echo $tf_state_bucket
       terraform init \
         -backend-config="bucket=$tf_state_bucket" \
         -backend-config="prefix=$BRANCH_NAME" || exit 1
