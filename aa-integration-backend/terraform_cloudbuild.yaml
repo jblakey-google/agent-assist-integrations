@@ -98,31 +98,31 @@ steps:
         -var="auth_option=$auth_option"
       cd ../../
 
-# [START tf-destroy]
-- id: 'tf destroy'
-  name: 'hashicorp/terraform:1.0.0'
-  entrypoint: 'sh'
-  args:
-  - '-c'
-  - |
-      cd ./aa-integration-backend/terraform
-      echo ""
-      echo "*************** TERRAFORM DESTROYING ******************"
-      auth_option=""
-      if [ $BRANCH_NAME != 'main' ]; then
-        auth_option="Skip"
-      fi
-      terraform destroy -auto-approve \
-        -var="gcp_project_id=$PROJECT_ID" \
-        -var="ui_connector_docker_image=gcr.io/$PROJECT_ID/aa-integration-backend/ui-connector-$BRANCH_NAME:$SHORT_SHA" \
-        -var="cloud_pubsub_interceptor_docker_image=gcr.io/$PROJECT_ID/aa-integration-backend/cloud-pubsub-interceptor-$BRANCH_NAME:$SHORT_SHA" \
-        -var="connector_service_name=ui-connector-$BRANCH_NAME" \
-        -var="interceptor_service_name=cloud-pubsub-interceptor-$BRANCH_NAME" \
-        -var="redis_instance_id=aa-integration-redis-$BRANCH_NAME" \
-        -var="agent_assist_notifications_subscription_id=aa-new-suggestion-sub-$BRANCH_NAME" \
-        -var="new_message_notifications_subscription_id=aa-new-message-sub-$BRANCH_NAME" \
-        -var="conversation_lifecycle_notifications_subscription_id=aa-conversation-event-sub-$BRANCH_NAME" \
-        -var="new_recognition_result_notification_subscription_id=aa-intermediate-transcript-event-sub-$BRANCH_NAME" \
-        -var="auth_option=$auth_option"
-      echo "*************** TERRAFORM DESTROY COMPLETE ******************"
-# [END tf-destroy]
+# # [START tf-destroy]
+# - id: 'tf destroy'
+#   name: 'hashicorp/terraform:1.0.0'
+#   entrypoint: 'sh'
+#   args:
+#   - '-c'
+#   - |
+#       cd ./aa-integration-backend/terraform
+#       echo ""
+#       echo "*************** TERRAFORM DESTROYING ******************"
+#       auth_option=""
+#       if [ $BRANCH_NAME != 'main' ]; then
+#         auth_option="Skip"
+#       fi
+#       terraform destroy -auto-approve \
+#         -var="gcp_project_id=$PROJECT_ID" \
+#         -var="ui_connector_docker_image=gcr.io/$PROJECT_ID/aa-integration-backend/ui-connector-$BRANCH_NAME:$SHORT_SHA" \
+#         -var="cloud_pubsub_interceptor_docker_image=gcr.io/$PROJECT_ID/aa-integration-backend/cloud-pubsub-interceptor-$BRANCH_NAME:$SHORT_SHA" \
+#         -var="connector_service_name=ui-connector-$BRANCH_NAME" \
+#         -var="interceptor_service_name=cloud-pubsub-interceptor-$BRANCH_NAME" \
+#         -var="redis_instance_id=aa-integration-redis-$BRANCH_NAME" \
+#         -var="agent_assist_notifications_subscription_id=aa-new-suggestion-sub-$BRANCH_NAME" \
+#         -var="new_message_notifications_subscription_id=aa-new-message-sub-$BRANCH_NAME" \
+#         -var="conversation_lifecycle_notifications_subscription_id=aa-conversation-event-sub-$BRANCH_NAME" \
+#         -var="new_recognition_result_notification_subscription_id=aa-intermediate-transcript-event-sub-$BRANCH_NAME" \
+#         -var="auth_option=$auth_option"
+#       echo "*************** TERRAFORM DESTROY COMPLETE ******************"
+# # [END tf-destroy]
