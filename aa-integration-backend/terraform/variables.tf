@@ -31,22 +31,22 @@ variable "service_region" {
 
 variable "agent_assist_notifications_topic_id" {
   description = "The topic id for agent assist suggestions."
-  default     = "aa-new-suggestion-topic-tf01"
+  default     = "aa-new-suggestion-topic"
 }
 
 variable "new_message_notifications_topic_id" {
   description = "The topic id for new conversation messages."
-  default     = "aa-new-message-topic-tf01"
+  default     = "aa-new-message-topic"
 }
 
 variable "conversation_lifecycle_notifications_topic_id" {
   description = "The topic id for conversation lifecycle events."
-  default     = "aa-conversation-event-topic-tf01"
+  default     = "aa-conversation-event-topic"
 }
 
 variable "new_recognition_result_notification_topic_id" {
   description = "The topic id for new recognition result events."
-  default     = "aa-intermediate-transcript-topic-tf01"
+  default     = "aa-intermediate-transcript-topic"
 }
 
 
@@ -61,7 +61,7 @@ variable "auth_option" {
 
 # The name of your JWT secret.
 variable "jwt_secret_name" {
-  default = "aa-integration-jwt-secret-tf01"
+  default = "aa-integration-jwt-secret"
 }
 
 # Configurations for Memorystore for Redis.
@@ -79,49 +79,49 @@ variable "redis_ip_range" {
 }
 
 variable "redis_instance_id" {
-  default = "aa-integration-redis-tf01"
+  default = "aa-integration-redis"
 }
 
 # Configurations for Cloud Run services.
 variable "connector_service_account_name" {
-  default = "ui-connector-tf01"
+  default = "ui-connector"
 }
 
 variable "interceptor_service_account_name" {
-  default = "cloud-pubsub-interceptor-tf01"
+  default = "cloud-pubsub-interceptor"
 }
 
 variable "connector_service_name" {
-  default = "ui-connector-tf01"
+  default = "ui-connector"
 }
 
 variable "interceptor_service_name" {
-  default = "cloud-pubsub-interceptor-tf01"
+  default = "cloud-pubsub-interceptor"
 }
 
 # Configurations for Cloud Pub/Sub topics and subscriptions.
 variable "cloud_run_pubsub_invoker_name" {
-  default = "cloud-run-pubsub-invoker-tf01"
+  default = "cloud-run-pubsub-invoker"
 }
 
 variable "agent_assist_notifications_subscription_id" {
   description = "The subscription id for agent assist suggestions."
-  default     = "aa-new-suggestion-sub-tf01"
+  default     = "aa-new-suggestion-sub"
 }
 
 variable "new_message_notifications_subscription_id" {
   description = "The subscription id for new conversation messages."
-  default     = "aa-new-message-sub-tf01"
+  default     = "aa-new-message-sub"
 }
 
 variable "conversation_lifecycle_notifications_subscription_id" {
   description = "The subscription id for conversation lifecycle events."
-  default     = "aa-conversation-event-sub-tf01"
+  default     = "aa-conversation-event-sub"
 }
 
 variable "new_recognition_result_notification_subscription_id" {
   description = "The subscription id for new recognition result, intermediate  events."
-  default     = "aa-intermediate-transcript-event-sub-tf01"
+  default     = "aa-intermediate-transcript-event-sub"
 }
 
 
