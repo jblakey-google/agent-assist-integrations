@@ -16,6 +16,10 @@
 
 <template>
   <div class="agent-assist-component">
+    <div class="load-error" lwc:if={loadError} >
+      <h3>Load Error</h3>
+      <p>{loadError.message}</p>
+    </div>
     <lightning-conversation-toolkit-api lwc:ref="lwcToolKitApi">
     </lightning-conversation-toolkit-api>
     <div class="transcript-container hidden" lwc:if={showTranscript} >
@@ -23,9 +27,5 @@
       <div class="agent-assist-transcript" lwc:dom="manual"></div>
     </div>
     <div class="agent-assist-container" lwc:dom="manual"></div>
-    <div class="load-error" lwc:if={loadError} >
-      <h3>Load Error</h3>
-      <p>{loadError.message}</p>
-    </div>
   </div>
 </template>

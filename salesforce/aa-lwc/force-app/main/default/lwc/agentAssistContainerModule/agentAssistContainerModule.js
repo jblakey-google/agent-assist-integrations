@@ -32,8 +32,7 @@ window.__Zone_disable_on_property = true;
 export default class AgentAssistContainerModule extends LightningElement {
   @api recordId;
   @wire(MessageContext) messageContext;
-  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] })
-  contact;
+  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] }) contact;
   get contactPhone() {
     return this.contact.data.fields.Phone.value.replaceAll(/[^\d]/g, "");
   }
@@ -196,10 +195,9 @@ export default class AgentAssistContainerModule extends LightningElement {
     config.apiConfig.authToken = this.token;
     config.apiConfig.customApiEndpoint = this.endpoint;
     config.omitScriptNonce = true;
-
     config.features = this.features; // needed
 
-    config.uiModuleEventOptions = {};
+    // config.uiModuleEventOptions = {};
     // config.uiModuleEventOptions.namespace = this.recordId;
 
     if (this.channel === "voice") {
@@ -209,6 +207,8 @@ export default class AgentAssistContainerModule extends LightningElement {
     }
 
     const initializeUIM = () => {
+      console.log('config')
+      console.log(config)
       containerContainerEl.appendChild(containerEl);
       connector.init(config);
       console.log(connector);
@@ -321,6 +321,9 @@ export default class AgentAssistContainerModule extends LightningElement {
         this.conversationName,
         this.recordId
       );
+    }, 
+    {
+      // namespace: recordId
     });
     addAgentAssistEventListener(
       "conversation-initialized",
@@ -338,7 +341,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         }
       },
       {
-        // namespace: this.recordId
+        // namespace: recordId
       }
     );
     addAgentAssistEventListener(
@@ -350,7 +353,7 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.recordId
         ),
       {
-        // namespace: this.recordId
+        // namespace: recordId
       }
     );
     addAgentAssistEventListener(
@@ -362,14 +365,14 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.recordId
         ),
       {
-        // namespace: this.recordId
+        // namespace: recordId
       }
     );
     addAgentAssistEventListener(
       "copy-to-clipboard",
       (event) => integration.handleCopyToClipboard(event, this.debugMode),
       {
-        // namespace: this.recordId
+        // namespace: recordId
       }
     );
     if (this.channel === "voice") {
@@ -380,7 +383,7 @@ export default class AgentAssistContainerModule extends LightningElement {
             "conversation-summarization-requested",
             { detail: { conversationName: this.conversationName } },
             {
-              // namespace: this.recordId
+              // namespace: recordId
             }
           );
           console.log("debug -- not clearing the conversation name...");
@@ -391,7 +394,7 @@ export default class AgentAssistContainerModule extends LightningElement {
           // );
         },
         {
-          // namespace: this.recordId
+          // namespace: recordId
         }
       );
     }
