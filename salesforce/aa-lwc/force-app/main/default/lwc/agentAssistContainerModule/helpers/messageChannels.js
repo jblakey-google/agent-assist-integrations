@@ -25,9 +25,12 @@ import conversationEndUserMessageChannel from "@salesforce/messageChannel/lightn
 import conversationEndedChannel from "@salesforce/messageChannel/lightning__conversationEnded";
 
 function handleConversationEnded(
-  message, recordId, debugMode, conversationName, features) {
-
-
+  message,
+  recordId,
+  debugMode,
+  conversationName,
+  features
+) {
   if (recordId !== message.recordId) return; // conditionally ignore event
   if (debugMode) {
     console.log(
@@ -49,7 +52,12 @@ function handleConversationEnded(
 }
 
 function handleMessageSend(
-  senderRole, message, recordId, debugMode, conversationId) {
+  senderRole,
+  message,
+  recordId,
+  debugMode,
+  conversationId
+) {
   if (recordId !== message.recordId) return; // conditionally ignore event
   if (debugMode) {
     console.log(

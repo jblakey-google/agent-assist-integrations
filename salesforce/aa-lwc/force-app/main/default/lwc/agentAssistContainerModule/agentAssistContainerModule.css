@@ -15,85 +15,235 @@
  */
 
 /* Agent Assist Modules Container */
-.agent-assist-component {
+/* .agent-assist-component {
   background: #fff;
   border-radius: 4px;
-  padding: 4px;
+  overflow: hidden;
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
+} */
 
-.drag-container:not(:first-of-type) {
-  margin-top: 8px;
-}
 
-.agent-assist-container {
+/* .agent-assist-container {
   flex: 1;
   max-width: 100%;
-}
+} */
 
-.modules-container .content-wrapper {
+/* .modules-container .content-wrapper {
   padding: 0;
+} */
+
+/* .pending-suggested-queries-hidden {
+  display: none;
+} */
+
+/* Generative Knowledge Assist */
+/* .content-wrapper .main-container {
+  padding: 8px;
+} */
+
+/* .main-container .bottom-container > * {
+  margin: 8px 0 0;
+} */
+
+/* .main-container .answer-card-container {
+  margin-bottom: 0;
+} */
+
+/* .article-sources-links > * + * {
+  padding-top: 8px;
+} */
+
+/* .knowledge-search-article-link.source-element-text {
+  white-space: normal;
+  line-height: 1.1rem;
+} */
+
+/* Summarization */
+/* .summary__content {
+  max-height: unset;
+} */
+
+/* .summary__content-wrapper {
+  padding: 0 16px !important;
+} */
+
+/* .summary__content-details {
+  padding-top: 8px
+} */
+
+/* section.summary__title-bar {
+  padding: 0 8px !important;
+} */
+
+/* button.generate-summary {
+  margin: 8px;
+} */
+
+/* .summary__title-bar-wrapper .mat-icon {
+  line-height: 100%;
+} */
+
+/* .summary__content .mat-mdc-progress-spinner {
+  margin: 16px;
+} */
+
+/* Smart Reply */
+/* .content-wrapper .mat-mdc-chip-set .mdc-evolution-chip-set__chips {
+  margin-left: unset;
+} */
+
+/* .content-wrapper .gmat-body-2.smart-reply__chip--empty {
+  margin: unset;
+  padding: 16px;
+} */
+
+/* Load Error */
+/* .initialization-spinner-wrapper {
+  padding: 16px;
+} */
+
+/* .load-error {
+  border-radius: 4px;
+  border: 1px solid hsl(5, 81%, 75%);
+  background: hsl(5, 81%, 95%);
+  margin-top: 8px;
+} */
+
+/* .load-error h3, .load-error p {
+  color: hsl(5, 81%, 56%);
+  padding: 7px 11px 4px 11px;
+  font:
+      500 16px/22px Google Sans,
+      Helvetica Neue,
+      sans-serif;
+} */
+
+/* .load-error p {
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 11px 7px 11px;
+} */
+
+/* .empty-state {
+  background-color: #fafafa;
+  border-color: #dfdfdf;
+  flex: 1;
+} */
+
+/* .empty-state h3, .empty-state p {
+  color: #777;
+} */
+
+/* ========================================================================== */
+
+/* UIM v2 CSS Adjustments for LWC */
+
+/* Adds a padding to the bottom of the knowledge search results container */
+/* .agent-assist-ui-modules .knowledge-search-results {
+  padding-bottom: 5%;
+} */
+
+/* Adds a padding to the bottom of the empty suggestions wrapper */
+/* .agent-assist-ui-modules .empty-suggestions-wrapper {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+} */
+
+/* Adds a margin to the bottom of the loading spinner in the knowledge search container */
+/* .mat-mdc-progress-spinner.mdc-circular-progress.mat-primary.mdc-circular-progress--indeterminate.gmat-mdc-progress-spinner {
+  margin-bottom: 32px;
+} */
+
+/* Adds a margin to the bottom of the loading spinner in the knowledge search container */
+/* .main .knowledge-search-container .knowledge-search-loading-spinner {
+  margin-bottom: 48px;
+} */
+
+/* Adds a padding to the bottom of the search result text */
+/* .main .knowledge-search-container .search-result-text {
+  padding-bottom: 2.5%;
+} */
+
+/* This class is used fix button icons */
+/* .mat-icon.notranslate.mat-icon-no-color 
+  line-height: 0rem;
+} */
+
+
+/* UIM v2 Agent Assist Component =================================================== */
+.agent-assist-component {
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #c9c9c9;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 610px;
+  background: hsla(0, 100%, 100%, 1);
 }
 
-.pending-suggested-queries-hidden {
+.hidden, lightning-conversation-toolkit-api {
   display: none;
 }
 
-/* Generative Knowledge Assist */
-.content-wrapper .main-container {
-  padding: 8px;
+.flexipageComponent .agent-assist-component {
+    background-color: green;
+    max-height: 610px;
+    overflow-y: auto;
 }
 
-.main-container .bottom-container > * {
-  margin: 8px 0 0;
+.agent-assist-component .transcript-container {
+  flex: 2;
 }
 
-.main-container .answer-card-container {
-  margin-bottom: 0;
+.agent-assist-component .agent-assist-container {
+  flex: 3;
 }
 
-.article-sources-links > * + * {
-  padding-top: 8px;
+/* fixes inconsistent padding on bottom of header */
+.agent-assist-ui-modules .main .header {
+  padding-bottom: 12px;
+  /* background: hsla(0, 100%, 90%, 1); */
 }
 
-.knowledge-search-article-link.source-element-text {
-  white-space: normal;
-  line-height: 1.1rem;
+/* fixes misaligned button icons */
+.agent-assist-ui-modules .mat-mdc-button>.mat-icon, .agent-assist-ui-modules .mat-mdc-unelevated-button>.mat-icon, .agent-assist-ui-modules .mat-mdc-raised-button>.mat-icon, .agent-assist-ui-modules .mat-mdc-outlined-button>.mat-icon, .agent-assist-ui-modules .mat-tonal-button>.mat-icon {
+  line-height: 0;
 }
 
-/* Summarization */
-.summary__content {
-  max-height: unset;
+.agent-assist-ui-modules .dark-mode .main .suggestions-container, .dark-mode {
+    padding-top: 1rem;
 }
 
-.summary__content-wrapper {
-  padding: 0 16px !important;
+/* Adds consistent vertical padding to the empty suggestions wrapper */
+.agent-assist-ui-modules .main .suggestions-container .empty-suggestions-wrapper {
+  padding-top: 2rem;
+  /* background: hsla(150, 100%, 90%, 1); */
 }
 
-.summary__content-details {
-  padding-top: 8px
+/* Adds consistent vertical padding to the empty suggestions wrapper for knowledge search */
+.agent-assist-ui-modules .main  .knowledge-search-container .empty-suggestions-wrapper {
+  padding-top: 2rem;
+  padding-bottom: 1rem;
+  /* background: hsla(100, 100%, 90%, 1); */
 }
 
-section.summary__title-bar {
-  padding: 0 8px !important;
+/* Because knowledge search container uses display:flex, it has no padding-bottom. This fixes it using margin. */
+.agent-assist-ui-modules .main .knowledge-search-container {
+  margin-bottom: 22px;
 }
 
-button.generate-summary {
-  margin: 8px;
+/* Adds a margin to the bottom of the loading spinner in the knowledge search container */
+.agent-assist-ui-modules .main .knowledge-search-container .knowledge-search-loading-spinner {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  /* background: hsla(250, 100%, 90%, 1); */
 }
 
-.summary__title-bar-wrapper .mat-icon {
-  line-height: 100%;
-}
-
-.summary__content .mat-mdc-progress-spinner {
-  margin: 16px;
-}
-
-/* Transcript */
+/* Transcript =============================================================== */
 .transcript-container {
   border: 1px solid #ddd;
   flex: 1;
@@ -105,7 +255,7 @@ button.generate-summary {
 }
 
 .transcript-container h3 {
-  background-color: #f8f9fa;
+  background-color: #f1f3f4 !important;
   border-bottom: 1px solid #dadce0;
   color: #5f6368;
   padding: 7px 11px;
@@ -123,55 +273,9 @@ font:
 .container .icon-container .role-icon {
   display: flex !important;
   padding: 4.5px !important;
+  line-height: 0 !important
 }
 
-/* Smart Reply */
-.content-wrapper .mat-mdc-chip-set .mdc-evolution-chip-set__chips {
-  margin-left: unset;
-}
-
-.content-wrapper .gmat-body-2.smart-reply__chip--empty {
-  margin: unset;
-  padding: 16px;
-}
-
-/* Load Error */
-.initialization-spinner-wrapper {
-  padding: 16px;
-}
-
-.load-error {
-  border-radius: 4px;
-  border: 1px solid hsl(5, 81%, 75%);
-  background: hsl(5, 81%, 95%);
-  margin-top: 8px;
-}
-
-.load-error h3, .load-error p {
-  color: hsl(5, 81%, 56%);
-  padding: 7px 11px 4px 11px;
-  font:
-      500 16px/22px Google Sans,
-      Helvetica Neue,
-      sans-serif;
-}
-
-.load-error p {
-  font-size: 12px;
-  line-height: 18px;
-  padding: 0 11px 7px 11px;
-}
-
-.empty-state {
-  background-color: #fafafa;
-  border-color: #dfdfdf;
-  flex: 1;
-}
-
-.empty-state h3, .empty-state p {
-  color: #777;
-}
-
-.hidden, lightning-conversation-toolkit-api {
-  display: none;
+.suggestions-container .card-container .card-header .header-left .feature-tag.knowledge-assist {
+  line-height: 0;
 }

@@ -51,7 +51,11 @@ export async function getConversationName(token, endpoint, contactPhone) {
     .then((conversation) => {
       console.log("conversation lifecycle state:", conversation.lifecycleState);
       if (conversation.lifecycleState === "COMPLETED") {
-        delConversationName(token, endpoint, contactPhone);
+        console.log(
+          'Normally this would be a "delConversationName" call, because the lifecycleState is "COMPLETED".'
+        );
+        return conversation.name;
+        // delConversationName(token, endpoint, contactPhone);
       } else {
         return conversation.name;
       }
