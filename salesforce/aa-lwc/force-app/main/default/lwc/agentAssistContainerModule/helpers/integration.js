@@ -80,7 +80,6 @@ export function handleApiConnectorInitialized(
   conversationName,
   recordId
 ) {
-  console.log("TEST")
   if (debugMode) {
     console.log(event);
   }
@@ -92,7 +91,7 @@ export function handleApiConnectorInitialized(
       }
     },
     {
-      namespace: recordId
+      // namespace: recordId
     }
   );
 }
@@ -125,7 +124,7 @@ function listMessagesResponseReceivedHandler(
         }
       },
       {
-        namespace: recordId
+        // namespace: recordId
       }
     );
   });
@@ -157,7 +156,7 @@ export async function reconcileConversationLogs(
         recordId
       ),
     {
-      namespace: recordId
+      // namespace: recordId
     }
   );
 
@@ -166,7 +165,7 @@ export async function reconcileConversationLogs(
     "list-messages-requested",
     { detail: { conversationName: conversationName } },
     {
-      namespace: recordId
+      // namespace: recordId
     }
   );
 }
@@ -263,7 +262,7 @@ export function initEventDragnet(recordId) {
       eventName,
       (event) => console.log("initEventDragnet - heard:", event),
       {
-        namespace: recordId
+        // namespace: recordId
       }
     );
   });
