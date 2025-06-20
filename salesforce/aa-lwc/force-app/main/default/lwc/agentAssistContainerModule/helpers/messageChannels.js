@@ -45,7 +45,7 @@ function handleConversationEnded(
       "conversation-summarization-requested",
       { detail: { conversationName: conversationName } },
       {
-        // namespace: recordId
+        namespace: recordId
       }
     );
   }
@@ -83,7 +83,7 @@ function handleMessageSend(
       }
     },
     {
-      // namespace: recordId
+      namespace: recordId
     }
   );
 }

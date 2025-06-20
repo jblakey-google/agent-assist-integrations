@@ -107,6 +107,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         `Got error: "${error.message}". Unable to authorize, please check your SF Trusted URLs, console, and configuration.`
       );
     }
+    console.log('probe 1')
     // parse the conversation profile to get project and location
     try {
       this.project = this.conversationProfile.match(
@@ -131,7 +132,9 @@ export default class AgentAssistContainerModule extends LightningElement {
       // get the conversation name for the channel
       this.conversationName = `projects/${this.project}/locations/${this.location}/conversations/${this.conversationId}`;
     }
+    console.log('probe 2')
     this.initAgentAssistEvents();
+    console.log('probe 3')
 
     // optionally enable helpful console logs
     if (this.debugMode) {
@@ -147,6 +150,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       console.log(`this.token: ${this.token}`);
       integration.initEventDragnet(this.recordId); // Log all Agent Assist events.
     }
+    console.log('probe 4')
 
     // create the lwc if conversationname is set, else show the empty state
     // create a transcript of the agent assist conversation.
@@ -155,7 +159,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         ".agent-assist-transcript"
       );
       const transcriptEl = document.createElement("agent-assist-transcript");
-      // transcriptEl.setAttribute("namespace", this.recordId);
+      transcriptEl.setAttribute("namespace", this.recordId);
       transcriptContainerEl.appendChild(transcriptEl);
     }
 
@@ -171,7 +175,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       ".agent-assist-container"
     );
     let attributes = [
-      // ["namespace", this.recordId],
+      ["namespace", this.recordId],
       ["custom-api-endpoint", this.endpoint],
       ["channel", this.channel],
       ["agent-desktop", "Custom"],
@@ -198,8 +202,8 @@ export default class AgentAssistContainerModule extends LightningElement {
     config.omitScriptNonce = true;
     config.features = this.features; // needed
 
-    // config.uiModuleEventOptions = {};
-    // config.uiModuleEventOptions.namespace = this.recordId;
+    config.uiModuleEventOptions = {};
+    config.uiModuleEventOptions.namespace = this.recordId;
 
     if (this.channel === "voice") {
       config.eventBasedConfig = {};
@@ -322,9 +326,9 @@ export default class AgentAssistContainerModule extends LightningElement {
         this.conversationName,
         this.recordId
       );
-    }, 
+    },
     {
-      // namespace: recordId
+      namespace: this.recordId
     });
     addAgentAssistEventListener(
       "conversation-initialized",
@@ -342,7 +346,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         }
       },
       {
-        // namespace: recordId
+        namespace: this.recordId
       }
     );
     addAgentAssistEventListener(
@@ -354,7 +358,7 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.recordId
         ),
       {
-        // namespace: recordId
+        namespace: this.recordId
       }
     );
     addAgentAssistEventListener(
@@ -366,14 +370,14 @@ export default class AgentAssistContainerModule extends LightningElement {
           this.recordId
         ),
       {
-        // namespace: recordId
+        namespace: this.recordId
       }
     );
     addAgentAssistEventListener(
       "copy-to-clipboard",
       (event) => integration.handleCopyToClipboard(event, this.debugMode),
       {
-        // namespace: recordId
+        namespace: this.recordId
       }
     );
     if (this.channel === "voice") {
@@ -384,7 +388,7 @@ export default class AgentAssistContainerModule extends LightningElement {
             "conversation-summarization-requested",
             { detail: { conversationName: this.conversationName } },
             {
-              // namespace: recordId
+              namespace: this.recordId
             }
           );
           console.log("debug -- not clearing the conversation name...");
@@ -395,7 +399,7 @@ export default class AgentAssistContainerModule extends LightningElement {
           // );
         },
         {
-          // namespace: recordId
+          namespace: this.recordId
         }
       );
     }
