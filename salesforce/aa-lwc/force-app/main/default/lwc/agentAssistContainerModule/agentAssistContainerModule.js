@@ -65,6 +65,7 @@ export default class AgentAssistContainerModule extends LightningElement {
     );
 
     this.showTranscript = this.debugMode || this.channel === 'voice'
+    this.showTranscript = false // TODO: remove this line
   }
   disconnectedCallback() {
     if (this.channel === "chat") {

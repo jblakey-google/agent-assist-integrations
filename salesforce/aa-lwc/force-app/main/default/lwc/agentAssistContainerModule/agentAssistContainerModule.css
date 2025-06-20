@@ -84,6 +84,11 @@
   /* background: hsla(250, 100%, 90%, 1); */
 }
 
+/* Fix feature tag icon alignment in suggestions */
+.suggestions-container .card-container .card-header .header-left .feature-tag {
+  line-height: 0;
+}
+
 /* Transcript =============================================================== */
 .transcript-container {
   border: 1px solid #ddd;
