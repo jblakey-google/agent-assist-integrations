@@ -29,6 +29,9 @@ import messageChannels from "./helpers/messageChannels";
 
 // // This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
 window.__Zone_disable_on_property = true;
+// window._uiModuleFlags = { debug: false, environment: 'staging'};
+// console.log(JSON.stringify(window._uiModuleFlags));
+
 export default class AgentAssistContainerModule extends LightningElement {
   @api recordId;
   @wire(MessageContext) messageContext;
@@ -46,7 +49,7 @@ export default class AgentAssistContainerModule extends LightningElement {
   @api consumerKey; // SF Connected App Consumer Key
   @api consumerSecret; // SF Connected App Consumer Secret
 
-  debugMode = true;
+  debugMode = false;
   googleLogoUrl = google_logo;
   token = null;
   conversationId = null;
@@ -55,6 +58,7 @@ export default class AgentAssistContainerModule extends LightningElement {
   loadError = null;
 
   connectedCallback() {
+    // this._uiModuleFlags = { debug: false, environment: 'staging'};
     integration.checkConfiguration(
       this.endpoint,
       this.features,
@@ -65,7 +69,7 @@ export default class AgentAssistContainerModule extends LightningElement {
     );
 
     this.showTranscript = this.debugMode || this.channel === 'voice'
-    this.showTranscript = false // TODO: remove this line
+    // this.showTranscript = false // TODO: remove this line
   }
   disconnectedCallback() {
     if (this.channel === "chat") {
@@ -94,6 +98,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       // create a synthetic conversationId using the recordId of the current messaging session
       this.conversationId = `SF-${this.recordId}`;
       // subscribe to MIAW channels
+      messageChannels.unsubscribeToMessageChannels();
       messageChannels.subscribeToMessageChannels(
         this.recordId,
         this.debugMode,
@@ -107,7 +112,6 @@ export default class AgentAssistContainerModule extends LightningElement {
         `Got error: "${error.message}". Unable to authorize, please check your SF Trusted URLs, console, and configuration.`
       );
     }
-    console.log('probe 1')
     // parse the conversation profile to get project and location
     try {
       this.project = this.conversationProfile.match(
@@ -123,6 +127,13 @@ export default class AgentAssistContainerModule extends LightningElement {
     }
     // for voice integrations, retrieve the conversation name from redis.
     if (this.channel === "voice") {
+      try {
+        console.log(this.contactPhone);
+      }
+      catch {
+        this.loadError = new Error("No phone number found for this contact record.")
+      }
+
       this.conversationName = await conversationName.getConversationName(
         this.token,
         this.endpoint,
@@ -132,9 +143,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       // get the conversation name for the channel
       this.conversationName = `projects/${this.project}/locations/${this.location}/conversations/${this.conversationId}`;
     }
-    console.log('probe 2')
     this.initAgentAssistEvents();
-    console.log('probe 3')
 
     // optionally enable helpful console logs
     if (this.debugMode) {
@@ -150,7 +159,6 @@ export default class AgentAssistContainerModule extends LightningElement {
       console.log(`this.token: ${this.token}`);
       integration.initEventDragnet(this.recordId); // Log all Agent Assist events.
     }
-    console.log('probe 4')
 
     // create the lwc if conversationname is set, else show the empty state
     // create a transcript of the agent assist conversation.
@@ -212,7 +220,6 @@ export default class AgentAssistContainerModule extends LightningElement {
     }
 
     const initializeUIM = () => {
-      console.log('config')
       console.log(config)
       containerContainerEl.appendChild(containerEl);
       connector.init(config);
@@ -392,11 +399,11 @@ export default class AgentAssistContainerModule extends LightningElement {
             }
           );
           console.log("debug -- not clearing the conversation name...");
-          // await conversationName.delConversationName(
-          //   this.token,
-          //   this.endpoint,
-          //   this.contactPhone
-          // );
+          await conversationName.delConversationName(
+            this.token,
+            this.endpoint,
+            this.contactPhone
+          );
         },
         {
           namespace: this.recordId
