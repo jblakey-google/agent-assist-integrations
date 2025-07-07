@@ -27,10 +27,11 @@ import conversationName from "./helpers/conversationName";
 import integration from "./helpers/integration";
 import messageChannels from "./helpers/messageChannels";
 
-// // This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
-window.__Zone_disable_on_property = true;
+// Generally useful flags for UIM debugging and environment configuration.
 // window._uiModuleFlags = { debug: false, environment: 'staging'};
-// console.log(JSON.stringify(window._uiModuleFlags));
+
+// This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
+window.__Zone_disable_on_property = true;
 
 export default class AgentAssistContainerModule extends LightningElement {
   @api recordId;
@@ -58,7 +59,6 @@ export default class AgentAssistContainerModule extends LightningElement {
   loadError = null;
 
   connectedCallback() {
-    // this._uiModuleFlags = { debug: false, environment: 'staging'};
     integration.checkConfiguration(
       this.endpoint,
       this.features,
@@ -69,7 +69,6 @@ export default class AgentAssistContainerModule extends LightningElement {
     );
 
     this.showTranscript = this.debugMode || this.channel === 'voice'
-    // this.showTranscript = false // TODO: remove this line
   }
   disconnectedCallback() {
     if (this.channel === "chat") {
@@ -80,6 +79,7 @@ export default class AgentAssistContainerModule extends LightningElement {
 
   async renderedCallback() {
     if (this.loadError) return;
+
     // load external dependencies as static resources
     await Promise.all([
       loadScript(this, ui_modules + "/container.js"),
@@ -87,7 +87,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       loadScript(this, ui_modules + "/common.js"),
       loadStyle(this, global_styles)
     ]);
-    console.log('loaded scripts without issue')
+
     try {
       // get an auth token from the UI Connector endpoint - this uses the connected app you created
       this.token = await integration.registerAuthToken(
@@ -158,11 +158,15 @@ export default class AgentAssistContainerModule extends LightningElement {
       }
       console.log(`this.conversationName: ${this.conversationName}`);
       console.log(`this.token: ${this.token}`);
-      integration.initEventDragnet(this.recordId); // Log all Agent Assist events.
+      console.log("this.showTranscript:", this.showTranscript);
+
+      // Log all Agent Assist events.
+      integration.initEventDragnet(this.recordId); 
     }
 
-    // create the lwc if conversationname is set, else show the empty state
-    // create a transcript of the agent assist conversation.
+    // Create the LWC if this.conversationName is set, else show the empty state
+
+    // Create a transcript of the agent assist conversation.
     if (this.showTranscript) {
       const transcriptContainerEl = this.template.querySelector(
         ".agent-assist-transcript"
@@ -209,7 +213,7 @@ export default class AgentAssistContainerModule extends LightningElement {
     config.apiConfig.authToken = this.token;
     config.apiConfig.customApiEndpoint = this.endpoint;
     config.omitScriptNonce = true;
-    config.features = this.features; // needed
+    config.features = this.features;
 
     config.uiModuleEventOptions = {};
     config.uiModuleEventOptions.namespace = this.recordId;
@@ -221,21 +225,21 @@ export default class AgentAssistContainerModule extends LightningElement {
     }
 
     const initializeUIM = () => {
-      console.log(config)
       containerContainerEl.appendChild(containerEl);
       connector.init(config);
-      console.log(connector);
+      if (this.debugMode) {
+        console.log("UiModulesConnector initialized with config:", config);
+        console.log("connector:", connector);
+      }
 
       // Make the UiM elements visible and hide the empty state
       containerContainerEl.classList.remove("hidden");
-
-      console.log("this.showTranscript", this.showTranscript);
 
       if (this.showTranscript) {
         // Make dynamic layout adjustments for transcript
         const transcriptContainerEl = this.template.querySelector(
           ".transcript-container"
-        ); // left
+        ); // left side
         transcriptContainerEl.classList.remove("hidden");
 
         const agentAssistComponentEl = this.template.querySelector(
@@ -243,7 +247,7 @@ export default class AgentAssistContainerModule extends LightningElement {
         );
         const agentAssistContainerEl = this.template.querySelector(
           ".agent-assist-container"
-        ); // right
+        ); // right side
         const transcriptHeaderEl = transcriptContainerEl.querySelector("h3");
         const transcriptConversationEl = transcriptContainerEl.querySelector(
           ".conversation-container"
