@@ -105,7 +105,8 @@ export default class AgentAssistContainerModule extends LightningElement {
         this.conversationName,
         this.features,
         this.conversationId,
-        this.messageContext
+        this.messageContext,
+        this.template
       );
     } catch (error) {
       this.loadError = new Error(
@@ -391,6 +392,12 @@ export default class AgentAssistContainerModule extends LightningElement {
       addAgentAssistEventListener(
         "conversation-completed",
         async () => {
+          // Remove logs after testing summarization for voice
+          const summarizationButton = this.template.querySelector(
+            ".generate-summary-footer button"
+          );
+          summarizationButton.dispatch("click");
+          // Remove logs after testing summarization for voice
           dispatchAgentAssistEvent(
             "conversation-summarization-requested",
             { detail: { conversationName: this.conversationName } },

@@ -29,7 +29,8 @@ function handleConversationEnded(
   recordId,
   debugMode,
   conversationName,
-  features
+  features,
+  template
 ) {
   if (recordId !== message.recordId) return; // conditionally ignore event
   if (debugMode) {
@@ -41,13 +42,11 @@ function handleConversationEnded(
     );
   }
   if (features.includes("CONVERSATION_SUMMARIZATION")) {
-    dispatchAgentAssistEvent(
-      "conversation-summarization-requested",
-      { detail: { conversationName: conversationName } },
-      {
-        namespace: recordId
-      }
+    // Neccessary to create a synthetic click event to trigger summarization modal.
+    const summarizationButton = template.querySelector(
+      ".generate-summary-footer button"
     );
+    summarizationButton.dispatchEvent(new Event('click'))
   }
 }
 
@@ -96,7 +95,7 @@ function subscribeToMessageChannel(messageContext, channel, handler) {
 
 export function subscribeToMessageChannels(
   recordId, debugMode, conversationName, features,
-  conversationId, messageContext) {
+  conversationId, messageContext, template) {
 
   subscribeToMessageChannel(
     messageContext,
@@ -114,7 +113,7 @@ export function subscribeToMessageChannels(
     messageContext,
     conversationEndedChannel,
     (event) => handleConversationEnded(
-      event, recordId, debugMode, conversationName, features)
+      event, recordId, debugMode, conversationName, features, template)
   );
 }
 

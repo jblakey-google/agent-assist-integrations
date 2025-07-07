@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* UIM v2 Agent Assist Component =================================================== */
+/* UIM v2 Agent Assist Component ============================================ */
 .agent-assist-component {
   border-radius: 4px;
   border: 1px solid #c9c9c9;
@@ -25,11 +25,13 @@
   background:  #f1f3f4;
 }
 
+/* Sets a max height and fixed height on the transcript to support (auto) scrolling */
 .agent-assist-transcript > * {
   max-height: 572px;
   height: 572px;
 }
 
+/* This hides a dimensionless LWC specific element that supports Messaging for In-App and Web */
 .hidden, lightning-conversation-toolkit-api {
   display: none;
 }
@@ -45,6 +47,8 @@
   max-height: 610px;
 }
 
+/* UIM V2 Adjustments ======================================================= */
+
 /* fixes inconsistent padding on bottom of header */
 .agent-assist-ui-modules .main .header {
   padding-bottom: 12px;
@@ -54,10 +58,6 @@
 /* fixes misaligned button icons */
 .agent-assist-ui-modules .mat-mdc-button>.mat-icon, .agent-assist-ui-modules .mat-mdc-unelevated-button>.mat-icon, .agent-assist-ui-modules .mat-mdc-raised-button>.mat-icon, .agent-assist-ui-modules .mat-mdc-outlined-button>.mat-icon, .agent-assist-ui-modules .mat-tonal-button>.mat-icon {
   line-height: 0;
-}
-
-.agent-assist-ui-modules .dark-mode .main .suggestions-container, .dark-mode {
-    padding-top: 1rem;
 }
 
 /* Adds consistent vertical padding to the empty suggestions wrapper */
@@ -76,6 +76,7 @@
 /* Because knowledge search container uses display:flex, it has no padding-bottom. This fixes it using margin. */
 .agent-assist-ui-modules .main .knowledge-search-container {
   margin-bottom: 22px;
+  overflow-y: auto;
 }
 
 /* Adds a margin to the bottom of the loading spinner in the knowledge search container */
