@@ -36,7 +36,8 @@ window.__Zone_disable_on_property = true;
 export default class AgentAssistContainerModule extends LightningElement {
   @api recordId;
   @wire(MessageContext) messageContext;
-  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] }) contact;
+  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] })
+  contact;
   get contactPhone() {
     return this.contact.data.fields.Phone.value.replaceAll(/[^\d]/g, "");
   }
@@ -68,7 +69,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       this.debugMode
     );
 
-    this.showTranscript = this.debugMode || this.channel === 'voice'
+    this.showTranscript = this.debugMode || this.channel === "voice";
   }
   disconnectedCallback() {
     if (this.channel === "chat") {
