@@ -30,7 +30,8 @@ window.__Zone_disable_on_property = true;
 export default class AgentAssistContainerModule extends LightningElement {
   @api recordId;
   @wire(MessageContext) messageContext;
-  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] }) contact;
+  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] })
+  contact;
   get contactPhone() {
     return this.contact.data.fields.Phone.value.replaceAll(/[^\d]/g, "");
   }
@@ -62,7 +63,7 @@ export default class AgentAssistContainerModule extends LightningElement {
       this.debugMode
     );
 
-    this.showTranscript = this.debugMode || this.channel === 'voice'
+    this.showTranscript = this.debugMode || this.channel === "voice";
   }
   disconnectedCallback() {
     if (this.channel === "chat") {
@@ -180,50 +181,65 @@ export default class AgentAssistContainerModule extends LightningElement {
       if (this.showTranscript) {
         // Make dynamic layout adjustments for transcript
         const transcriptContainerEl = this.template.querySelector(
-          ".transcript-container"); // left
+          ".transcript-container"
+        ); // left
         transcriptContainerEl.classList.remove("hidden");
 
-        const agentAssistComponentEl = this.template.querySelector('.agent-assist-component')
+        const agentAssistComponentEl = this.template.querySelector(
+          ".agent-assist-component"
+        );
         const agentAssistContainerEl = this.template.querySelector(
-          ".agent-assist-container"); // right
-        const transcriptHeaderEl = transcriptContainerEl.querySelector('h3')
-        const transcriptConversationEl = transcriptContainerEl.querySelector('.conversation-container')
+          ".agent-assist-container"
+        ); // right
+        const transcriptHeaderEl = transcriptContainerEl.querySelector("h3");
+        const transcriptConversationEl = transcriptContainerEl.querySelector(
+          ".conversation-container"
+        );
 
         // Watch for resizes on modules and match transcript to  combined height
-        const resizeObserver = new ResizeObserver(_ => {
+        const resizeObserver = new ResizeObserver((_) => {
           // Check if the transcript is taking the full width of the component
-          if (parseInt(agentAssistComponentEl.clientWidth / transcriptConversationEl.clientWidth) === 1) {
+          if (
+            parseInt(
+              agentAssistComponentEl.clientWidth /
+                transcriptConversationEl.clientWidth
+            ) === 1
+          ) {
             // Transcript is taking full width
-            transcriptConversationEl.style.height = 'unset'
-            transcriptConversationEl.style.maxHeight = 'calc(-20px + 25vh)'
+            transcriptConversationEl.style.height = "unset";
+            transcriptConversationEl.style.maxHeight = "calc(-20px + 25vh)";
           } else {
             // 'Transcript is not taking full width'
-            transcriptConversationEl.style.height = '0px'
-            transcriptConversationEl.style.maxHeight = 'unset'
-            let newHeight = agentAssistContainerEl.scrollHeight - transcriptHeaderEl.scrollHeight - 3
-            transcriptConversationEl.style.height = `${newHeight}px`
+            transcriptConversationEl.style.height = "0px";
+            transcriptConversationEl.style.maxHeight = "unset";
+            let newHeight =
+              agentAssistContainerEl.scrollHeight -
+              transcriptHeaderEl.scrollHeight -
+              3;
+            transcriptConversationEl.style.height = "${newHeight}px";
           }
-        })
-        const moduleWrappers = this.template.querySelectorAll('module-wrapper')
-        moduleWrappers.forEach(wrapper => resizeObserver.observe(wrapper))
+        });
+        const moduleWrappers = this.template.querySelectorAll("module-wrapper");
+        moduleWrappers.forEach((wrapper) => resizeObserver.observe(wrapper));
 
         // Auto-scroll the transcript when new messages appear
         const mutationObserver = new MutationObserver((records, observer) => {
           for (record of records) {
             let last = record.addedNodes[record.addedNodes.length - 1];
-            last.scrollIntoView()
+            last.scrollIntoView();
           }
-        })
-        mutationObserver.observe(transcriptConversationEl, { childList: true })
-
+        });
+        mutationObserver.observe(transcriptConversationEl, { childList: true });
       }
-    }
+    };
 
     if (this.conversationName) {
       initializeUIM();
     } else {
       if (this.debugMode) {
-        console.log("No conversationName, cannot init Agent Assist UI Modules.");
+        console.log(
+          "No conversationName, cannot init Agent Assist UI Modules."
+        );
       }
       if (this.channel === "voice") {
         if (this.debugMode) {
@@ -244,8 +260,12 @@ export default class AgentAssistContainerModule extends LightningElement {
             }
             clearInterval(interval);
             integration.handleApiConnectorInitialized(
-              null, this.debugMode, this.conversationName, this.recordId),
-            initializeUIM();
+              null,
+              this.debugMode,
+              this.conversationName,
+              this.recordId
+            ),
+              initializeUIM();
           }
         }, 5000);
       }
