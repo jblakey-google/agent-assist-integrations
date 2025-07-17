@@ -1,11 +1,11 @@
-/* UIM v2 CSS Adjustments for LWC - These rules affect elements outside the component root and need be unscoped */
+/* UIM v2 CSS Adjustments for LWC - These rules affect elements outside the component root that need to be unscoped */
 
-/* fixes button icon mis-alignment */
-.mat-mdc-button>.mat-icon, .mat-mdc-unelevated-button>.mat-icon, .mat-mdc-raised-button>.mat-icon, .mat-mdc-outlined-button>.mat-icon, .mat-tonal-button>.mat-icon {  
+/* Fixes button icon misalignment */
+.mat-mdc-button>.mat-icon, .mat-mdc-unelevated-button>.mat-icon, .mat-mdc-raised-button>.mat-icon, .mat-mdc-outlined-button>.mat-icon, .mat-tonal-button>.mat-icon {
   line-height: 0 !important;
 }
 
-/* adds padding bottom to loading spinner in summary modal */
+/* Adds padding bottom to loading spinner in summary modal */
 .mat-mdc-dialog-container .summary__content .mat-mdc-progress-spinner.mdc-circular-progress.mat-primary {
   margin-bottom: 32px;
 }
@@ -14,7 +14,6 @@
 .mat-mdc-progress-spinner.mdc-circular-progress.mat-primary.mdc-circular-progress--indeterminate.gmat-mdc-progress-spinner {
   margin-top: 1rem;
   margin-bottom: 1rem;
-  /* background: hsla(200, 100%, 90%, 1); */
 }
 
 /* Fix modal scrolling */

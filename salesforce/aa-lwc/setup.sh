@@ -34,9 +34,12 @@ if [[ $1 == 'generate-static-resources' ]]; then
   file_path=${dir_path}/${file}.js
   rm -f ${file_path} # delete file if exists
   rm -f ${file_path}.resource-meta.xml # delete file if exists
-  # TODO: pin version to latest once UIM v2 bugfixes have been released.
-  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2/${file}.js > $file_path
-  curl --silent https://www.gstatic.com/agent-assist-ui-modules/staging/v2/${file}.js > $file_path
+  # pin the UIM container version to a version e.g. v2.0
+  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2.0/${file}.js > $file_path
+  # or, try the latest UIM v2 changes (auto updates)
+  curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2/${file}.js > $file_path
+  # or, try unreleased (staging) UIM v2 changes (auto updates)
+  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/staging/v2/${file}.js > $file_path
   echo downloaded js and wrote ${file_path}
 
   # download common.js
@@ -52,6 +55,19 @@ if [[ $1 == 'generate-static-resources' ]]; then
     --name ui_modules \
     --output-dir force-app/main/default/staticresources \
     --type application/zip
+
+  # Socket.IO - https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js
+  # Uncomment below to add the Socket.IO client as a static resource.
+  # file=socketio
+  # file_path=force-app/main/default/staticresources/${file}.js
+  # rm --force $file_path # delete file if exists
+  # rm --force $file_path.resource-meta.xml # delete file if exists
+  # sf static-resource generate \
+  #     --name ${file} \
+  #     --output-dir force-app/main/default/staticresources \
+  #     --type application/javascript
+  # curl --silent https://unpkg.com/socket.io-client@4.8.1/dist/socket.io.min.js > $file_path
+  # echo downloaded js and wrote $file_path
 
   # SVG Files
   # Place .svg files in the staticresources directory, then...
