@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-
 import google_logo from "@salesforce/resourceUrl/google_logo";
 import global_styles from "@salesforce/resourceUrl/global_styles";
 import ui_modules from "@salesforce/resourceUrl/ui_modules";
 import { MessageContext } from "lightning/messageService";
 import { loadScript, loadStyle } from "lightning/platformResourceLoader";
-import { getRecord } from "lightning/uiRecordApi";
+import { getRecord, getFieldValue } from "lightning/uiRecordApi";
 import { api, LightningElement, wire } from "lwc";
 
 import conversationName from "./helpers/conversationName";
@@ -28,7 +27,7 @@ import integration from "./helpers/integration";
 import messageChannels from "./helpers/messageChannels";
 
 // Generally useful flags for UIM debugging and environment configuration.
-// window._uiModuleFlags = { debug: false, environment: 'staging'};
+// window._uiModuleFlags = { debug: false };
 
 // This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
 window.__Zone_disable_on_property = true;
@@ -36,10 +35,9 @@ window.__Zone_disable_on_property = true;
 export default class AgentAssistContainerModule extends LightningElement {
   @api recordId;
   @wire(MessageContext) messageContext;
-  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] })
-  contact;
+  @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] }) contact;
   get contactPhone() {
-    return this.contact.data.fields.Phone.value.replaceAll(/[^\d]/g, "");
+    return getFieldValue(this.contact.data, "Contact.Phone");
   }
 
   // Configure these values in Lightning App Builder:
@@ -51,7 +49,7 @@ export default class AgentAssistContainerModule extends LightningElement {
   @api consumerKey; // SF Connected App Consumer Key
   @api consumerSecret; // SF Connected App Consumer Secret
 
-  debugMode = false;
+  debugMode = true;
   googleLogoUrl = google_logo;
   token = null;
   conversationId = null;
@@ -127,19 +125,16 @@ export default class AgentAssistContainerModule extends LightningElement {
         new Error(`"${this.conversationProfile}" is not a valid conversation profile.
         Expected format: projects/<projectId>/locations/<location>/conversationProfiles/<conversationProfileId>`);
     }
-    // for voice integrations, retrieve the conversation name from redis.
+    // for voice integrations, retrieve the conversation name from redis
     if (this.channel === "voice") {
-      try {
-        console.log(this.contactPhone);
-      }
-      catch {
+      if (!this.contactPhone) {
         this.loadError = new Error("No phone number found for this contact record.")
       }
-
       this.conversationName = await conversationName.getConversationName(
         this.token,
         this.endpoint,
-        this.contactPhone
+        this.contactPhone,
+        this.debugMode
       );
     } else if (this.channel === "chat") {
       // get the conversation name for the channel
@@ -162,12 +157,12 @@ export default class AgentAssistContainerModule extends LightningElement {
       console.log("this.showTranscript:", this.showTranscript);
 
       // Log all Agent Assist events.
-      integration.initEventDragnet(this.recordId); 
+      integration.initEventDragnet(this.recordId);
     }
 
     // Create the LWC if this.conversationName is set, else show the empty state
 
-    // Create a transcript of the agent assist conversation.
+    // Create a transcript of the Agent Assist conversation.
     if (this.showTranscript) {
       const transcriptContainerEl = this.template.querySelector(
         ".agent-assist-transcript"
@@ -207,23 +202,25 @@ export default class AgentAssistContainerModule extends LightningElement {
     // Create the UiModulesConnector and initialize it with the config
     const connector = new UiModulesConnector();
     const config = {};
+    // Basic config
     config.channel = this.channel;
+    config.features = this.features;
     config.agentDesktop = "Custom";
     config.conversationProfileName = this.conversationProfile;
-    config.apiConfig = {};
-    config.apiConfig.authToken = this.token;
-    config.apiConfig.customApiEndpoint = this.endpoint;
+    // Connector options
+    config.apiConfig = {
+      authToken: this.token,
+      customApiEndpoint: this.endpoint,
+    };
+    config.eventBasedConfig = {
+      notifierServerEndpoint: this.endpoint,
+      library: "SocketIo"
+    };
+    // Salesforce specific config
+    config.uiModuleEventOptions = {
+      namespace: this.recordId,
+    };
     config.omitScriptNonce = true;
-    config.features = this.features;
-
-    config.uiModuleEventOptions = {};
-    config.uiModuleEventOptions.namespace = this.recordId;
-
-    if (this.channel === "voice") {
-      config.eventBasedConfig = {};
-      config.eventBasedConfig.notifierServerEndpoint = this.endpoint;
-      config.eventBasedConfig.library = "SocketIo";
-    }
 
     const initializeUIM = () => {
       containerContainerEl.appendChild(containerEl);
@@ -232,62 +229,13 @@ export default class AgentAssistContainerModule extends LightningElement {
         console.log("UiModulesConnector initialized with config:", config);
         console.log("connector:", connector);
       }
-
       // Make the UiM elements visible and hide the empty state
       containerContainerEl.classList.remove("hidden");
-
       if (this.showTranscript) {
-        // Make dynamic layout adjustments for transcript
         const transcriptContainerEl = this.template.querySelector(
           ".transcript-container"
-        ); // left side
+        );
         transcriptContainerEl.classList.remove("hidden");
-
-        const agentAssistComponentEl = this.template.querySelector(
-          ".agent-assist-component"
-        );
-        const agentAssistContainerEl = this.template.querySelector(
-          ".agent-assist-container"
-        ); // right side
-        const transcriptHeaderEl = transcriptContainerEl.querySelector("h3");
-        const transcriptConversationEl = transcriptContainerEl.querySelector(
-          ".conversation-container"
-        );
-
-        // Watch for resizes on modules and match transcript to  combined height
-        const resizeObserver = new ResizeObserver((_) => {
-          // Check if the transcript is taking the full width of the component
-          if (
-            parseInt(
-              agentAssistComponentEl.clientWidth /
-                transcriptConversationEl.clientWidth
-            ) === 1
-          ) {
-            // Transcript is taking full width
-            transcriptConversationEl.style.height = "unset";
-            transcriptConversationEl.style.maxHeight = "calc(-20px + 25vh)";
-          } else {
-            // 'Transcript is not taking full width'
-            transcriptConversationEl.style.height = "0px";
-            transcriptConversationEl.style.maxHeight = "unset";
-            let newHeight =
-              agentAssistContainerEl.scrollHeight -
-              transcriptHeaderEl.scrollHeight -
-              3;
-            transcriptConversationEl.style.height = `${newHeight}px`;
-          }
-        });
-        const moduleWrappers = this.template.querySelectorAll("module-wrapper");
-        moduleWrappers.forEach((wrapper) => resizeObserver.observe(wrapper));
-
-        // Auto-scroll the transcript when new messages appear
-        const mutationObserver = new MutationObserver((records, observer) => {
-          for (record of records) {
-            let last = record.addedNodes[record.addedNodes.length - 1];
-            last.scrollIntoView();
-          }
-        });
-        mutationObserver.observe(transcriptConversationEl, { childList: true });
       }
     };
 
@@ -397,12 +345,10 @@ export default class AgentAssistContainerModule extends LightningElement {
       addAgentAssistEventListener(
         "conversation-completed",
         async () => {
-          // Remove logs after testing summarization for voice
           const summarizationButton = this.template.querySelector(
             ".generate-summary-footer button"
           );
           summarizationButton.dispatch("click");
-          // Remove logs after testing summarization for voice
           dispatchAgentAssistEvent(
             "conversation-summarization-requested",
             { detail: { conversationName: this.conversationName } },
@@ -410,7 +356,6 @@ export default class AgentAssistContainerModule extends LightningElement {
               namespace: this.recordId
             }
           );
-          console.log("debug -- not clearing the conversation name...");
           await conversationName.delConversationName(
             this.token,
             this.endpoint,

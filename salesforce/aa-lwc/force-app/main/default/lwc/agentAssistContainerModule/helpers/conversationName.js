@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export async function getConversationName(token, endpoint, contactPhone) {
+export async function getConversationName(token, endpoint, contactPhone, debugMode) {
   /**
    * Gets conversationName from Redis using conversationIntegrationKey.
    * For voice channel, presence of this key in Redis triggers UI Module initialization.
@@ -50,15 +50,17 @@ export async function getConversationName(token, endpoint, contactPhone) {
     .then((res) => res.json())
     .then((conversation) => {
       console.log("conversation lifecycle state:", conversation.lifecycleState);
-      if (conversation.lifecycleState === "COMPLETED") {
-        console.log(
-          'Normally this would be a "delConversationName" call, because the lifecycleState is "COMPLETED".'
-        );
-        return conversation.name;
-        // delConversationName(token, endpoint, contactPhone);
-      } else {
+      if (conversation.lifecycleState !== "COMPLETED") {
         return conversation.name;
       }
+      if (debugMode) {
+        console.log(
+          `Conversation ${conversation.name} is COMPLETED, and its key is` +
+          ' being deleted from Redis. To prevent this for debugging purposes,' +
+          ' return conversation.name from this if block.'
+        );
+      }
+      delConversationName(token, endpoint, contactPhone);
     })
     .catch((err) => console.error(err));
 }
