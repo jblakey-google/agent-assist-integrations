@@ -25,6 +25,7 @@ import { api, LightningElement, wire } from "lwc";
 import conversationName from "./helpers/conversationName";
 import integration from "./helpers/integration";
 import messageChannels from "./helpers/messageChannels";
+// import ingestContextReferences from "./helpers/ingestContextReferences";
 
 // Generally useful flags for UIM debugging and environment configuration.
 // window._uiModuleFlags = { debug: false };
@@ -241,6 +242,11 @@ export default class AgentAssistContainerModule extends LightningElement {
 
     if (this.conversationName) {
       initializeUIM();
+
+      // Ingest hardcoded context references for demo purposes only
+      // ingestContextReferences.ingestDemoContextReferences(
+      //   this.endpoint, this.token, this.conversationName);
+
     } else {
       if (this.debugMode) {
         console.log(

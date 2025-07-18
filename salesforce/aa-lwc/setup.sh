@@ -34,9 +34,12 @@ if [[ $1 == 'generate-static-resources' ]]; then
   file_path=${dir_path}/${file}.js
   rm -f ${file_path} # delete file if exists
   rm -f ${file_path}.resource-meta.xml # delete file if exists
-  # TODO: pin version to latest once UIM v2 bugfixes have been released.
-  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2/${file}.js > $file_path
-  curl --silent https://www.gstatic.com/agent-assist-ui-modules/staging/v2/${file}.js > $file_path
+  # pin the UIM container version to a version e.g. v2.0
+  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2.0/${file}.js > $file_path
+  # or, try the latest UIM v2 changes (auto updates)
+  curl --silent https://www.gstatic.com/agent-assist-ui-modules/v2/${file}.js > $file_path
+  # or, try unreleased (staging) UIM v2 changes (auto updates)
+  # curl --silent https://www.gstatic.com/agent-assist-ui-modules/staging/v2/${file}.js > $file_path
   echo downloaded js and wrote ${file_path}
 
   # download common.js
