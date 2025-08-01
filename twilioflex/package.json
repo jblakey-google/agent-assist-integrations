@@ -1,33 +1,44 @@
 {
-  "name": "twilio-agent-assist-integration-monorepo",
-  "version": "1.0.0",
-  "description": "",
-  "devDependencies": {
-    "concurrently": "^7.0.0",
-    "gts": "^5.2.0",
-    "husky": "^7.0.4",
-    "typescript": "~5.2.0"
-  },
+  "name": "flex-project-template",
+  "version": "1.1.1",
+  "description": "This repository provides development teams with a starting point for flex projects or developing flex features.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "npm run lint:plugin && npm run lint:functions",
-    "lint:functions": "gts lint agent-assist-functions/src/**/*.ts",
-    "lint:plugin": "gts lint agent-assist-plugin/src/**/*.{ts,tsx}",
-    "clean": "gts clean",
-    "compile": "tsc",
-    "fix": "npm run fix:functions && npm run fix:plugin",
-    "fix:functions": "gts fix agent-assist-functions/src/**/*.ts",
-    "fix:plugin": "gts fix agent-assist-plugin/src/**/*.{ts,tsx}",
-    "install:functions": "cd agent-assist-functions && npm install",
-    "install:plugin": "cd agent-assist-plugin && npm install",
-    "postinstall": "npm run install:functions && npm run install:plugin",
-    "start:dev": "concurrently --kill-others \"npm run start:dev:functions\" \"npm run start:dev:plugin\"",
-    "start:dev:functions": "cd agent-assist-functions && npm run start:dev",
-    "start:dev:plugin": "cd agent-assist-plugin && npm run start:dev",
-    "pretest": "npm run compile",
-    "deploy:plugin": "cd agent-assist-plugin && npm run deploy",
-    "deploy:functions": "cd agent-assist-functions && npm run deploy"
+    "postinstall": "rm -rf ./serverless-functions/node_modules/ngrok && rm -rf ./node_modules/twilio-cli/node_modules/ngrok && node scripts/setup-environment.mjs",
+    "generate-env": "node scripts/setup-environment.mjs --skip-install",
+    "deploy-addons": "node scripts/deploy-addons.mjs",
+    "add-feature": "node scripts/add-feature.mjs",
+    "remove-features": "node scripts/remove-features.mjs",
+    "rename-template": "node scripts/rename-template.mjs",
+    "validate-environment": "node scripts/validate-environment.mjs",
+    "install-serverless-plugin": "twilio plugins:install @twilio-labs/plugin-serverless@v3",
+    "start:serverless": "cd serverless-functions && twilio serverless:start --inspect=localhost --port=3001 --env .env",
+    "start:plugin": "cd flex-template-agent-assist && twilio flex:plugins:start",
+    "start": "npm-run-all --parallel start:serverless start:insights start:plugin",
+    "start:docs": "cd docs && npm run start",
+    "start:insights": "npx -y @twilio/flex-ui-dev-proxy",
+    "lint": "eslint ./plugin-flex-ts-template-v2 ./serverless-functions ./addons",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:report": "npm run lint -- --output-file eslint_report.json --format json"
   },
-  "author": "Matthew DeGraffenreid",
-  "license": "Apache-2.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twilio-professional-services/flex-project-template.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/twilio-professional-services/flex-project-template/issues"
+  },
+  "homepage": "https://github.com/twilio-professional-services/flex-project-template#readme",
+  "devDependencies": {
+    "axios": "^1.7.5",
+    "eslint": "^8.37.0",
+    "json5": "^2.2.3",
+    "lodash": "^4.17.21",
+    "npm-run-all2": "^6.0.6",
+    "prompt": "^1.3.0",
+    "semver": "^7.6.2",
+    "shelljs": "^0.8.5",
+    "twilio-cli": "5.22.3"
+  }
 }
