@@ -36,6 +36,8 @@ AALightningElement = TwilioFlexMixin(AALightningElement);
 
 // This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
 window.__Zone_disable_on_property = true; // TODO: This is possibly not true anymore, remove if so
+// Generally useful flags for UIM debugging and environment configuration.
+// window._uiModuleFlags = { debug: true };
 
 export default class AgentAssistContainerDev extends AALightningElement {
   @api recordId;

@@ -57,6 +57,14 @@ const AgentAssistMixin = (BaseClass) =>
       navigator.clipboard.writeText(event.detail.textToCopy);
     }
 
+    handleDarkModeToggled(event) {
+      if (event.detail.on) {
+        this.refs.transcriptContainer.classList.add("dark-mode");
+      } else {
+        this.refs.transcriptContainer.classList.remove("dark-mode");
+      }
+    } 
+
     async delConversationName(contactPhone) {
       // Deletes conversationIntegrationKey:conversationName pair from Redis.
       // For voice channel, deleting this key allows the UI Modules to start polling for a new conversation.
@@ -123,17 +131,14 @@ const AgentAssistMixin = (BaseClass) =>
         (event) => this.handleApiConnectorInitialized(event),
         { namespace: this.recordId }
       );
-      // TODO: Remove if possible
-      // addAgentAssistEventListener(
-      //   "conversation-initialized",
-      //   (event) => {
-      //     this.participants = event.detail.participants;
-      //   },
-      //   { namespace: this.recordId }
-      // );
       addAgentAssistEventListener(
         "copy-to-clipboard",
-        (event) => integration.handleCopyToClipboard(event),
+        (event) => this.handleCopyToClipboard(event),
+        { namespace: this.recordId }
+      );
+      addAgentAssistEventListener(
+        "dark-mode-toggled",
+        (event) => this.handleDarkModeToggled(event),
         { namespace: this.recordId }
       );
     }
@@ -141,9 +146,7 @@ const AgentAssistMixin = (BaseClass) =>
     initUIModules() {
       // Create Transcript UI Module
       if (this.showTranscript) {
-        const transcriptContainerEl = this.template.querySelector(
-          ".agent-assist-transcript"
-        );
+        const transcriptContainerEl = this.refs.agentAssistTranscript;
         const transcriptEl = document.createElement("agent-assist-transcript");
         transcriptEl.setAttribute("namespace", this.recordId);
         transcriptContainerEl.appendChild(transcriptEl);
@@ -153,9 +156,7 @@ const AgentAssistMixin = (BaseClass) =>
       const containerEl = document.createElement("agent-assist-ui-modules-v2");
       containerEl.generalConfig = { clipboardMode: "EVENT_ONLY" };
       containerEl.classList.add("agent-assist-ui-modules");
-      const containerContainerEl = this.template.querySelector(
-        ".agent-assist-container"
-      );
+      const containerContainerEl = this.refs.agentAssistContainer;
       containerEl.setAttribute('features', this.features)
       containerEl.setAttribute('namespace', this.recordId)
 
@@ -187,15 +188,13 @@ const AgentAssistMixin = (BaseClass) =>
         containerContainerEl.appendChild(containerEl); // TODO: Weird error here about addEventListener not accepting options on Shadow nodes... only in debug mode though?
         connector.init(config);
         if (this.debugMode) {
-          this.debugLog("UiModulesConnector initialized with connector:");
-          console.log(connector)
+          this.debugLog("UiModulesConnector initialized with config:");
+          console.log(config)
         }
         // Make the UI Modules visible
         containerContainerEl.classList.remove("hidden");
         if (this.showTranscript) {
-          const transcriptContainerEl = this.template.querySelector(
-            ".transcript-container"
-          );
+          const transcriptContainerEl = this.refs.transcriptContainer
           transcriptContainerEl.classList.remove("hidden");
         }
       }
@@ -229,7 +228,9 @@ const AgentAssistMixin = (BaseClass) =>
           eventName,
           (event) => {
             this.debugLog(`initEventDragnet - heard: ${event.type}`);
-            console.log(event)
+            if (event.detail) {
+              console.log(event.detail)
+            }
           },
           { namespace: this.recordId }
         );

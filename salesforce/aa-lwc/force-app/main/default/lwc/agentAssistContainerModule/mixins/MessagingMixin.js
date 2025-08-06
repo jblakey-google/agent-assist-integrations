@@ -57,6 +57,12 @@ const MessagingMixin = (BaseClass) =>
       // Generate a summary when a Messaging conversation ends.
       if (this.recordId !== event.recordId) return;
       if (this.features.includes("CONVERSATION_SUMMARIZATION")) {
+        dispatchAgentAssistEvent(
+          "conversation-completed",
+          { detail: { conversationName: this.conversationName } },
+          { namespace: this.recordId }
+        );
+
         // Creates a synthetic click event to trigger summarization modal.
         const summarizationButton = this.template.querySelector(
           ".generate-summary-footer button"
