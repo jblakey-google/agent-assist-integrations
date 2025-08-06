@@ -28,8 +28,8 @@ CONVERSATION_SUMMARIZATION
 projects/g184812-ccai-sandbox-pso/locations/global/conversationProfiles/Kpb59b_8TtWo0cAc_lZXWg
 chat
 messaging
-3MVG9rZjd7MXFdLiK4Vudaaxp49EqjY0_4iJRsLNLiAQrc0kOQGZBUteu6E1NIvvoCa737KRy.FNR_XKVabPm
-718995E1FE87118D8E3E11862EE651E520E2B6EFD7A9A0EEACCD5B2C3485D963
+<consumerKey>
+<consumerSecret>
 ```
 
 ```sh
