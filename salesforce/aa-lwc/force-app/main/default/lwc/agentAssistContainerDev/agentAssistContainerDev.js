@@ -1,223 +1,105 @@
-import { LightningElement, api, wire } from 'lwc';
-import { getRecord } from "lightning/uiRecordApi";
-import { subscribeToVoiceToolkit, unsubscribeFromVoiceToolkit, scvEventNames } from './lib/voiceToolkit';
+/**
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// great examples here
-// https://github.com/service-cloud-voice/examples-from-doc/blob/main/ToolkitAPI/sampleLWCComponent/sampleLWCComponent.js
+import { LightningElement, api } from "lwc";
+import { loadScript, loadStyle } from "lightning/platformResourceLoader";
 
-const FIELDS = [
-  "VoiceCall.CallType",
-  "VoiceCall.FromPhoneNumber",
-  "VoiceCall.ToPhoneNumber"
-]
+// static resources
+import ui_modules from "@salesforce/resourceUrl/ui_modules";
+import global_styles from "@salesforce/resourceUrl/global_styles";
+import google_logo from "@salesforce/resourceUrl/google_logo";
 
-export default class AgentAssistContainerDev extends LightningElement {
+// lightning element mixins
+import AgentAssistMixin from "./mixins/AgentAssistMixin";
+import ServiceCloudVoiceMixin from "./mixins/ServiceCloudVoiceMixin";
+import MessagingMixin from "./mixins/MessagingMixin";
+import TwilioFlexMixin from "./mixins/TwilioFlexMixin";
+
+// mix in methods to extend LightningElement
+let AALightningElement = AgentAssistMixin(LightningElement);
+AALightningElement = ServiceCloudVoiceMixin(AALightningElement);
+AALightningElement = MessagingMixin(AALightningElement);
+AALightningElement = TwilioFlexMixin(AALightningElement);
+
+// This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
+window.__Zone_disable_on_property = true; // TODO: This is possibly not true anymore, remove if so
+
+export default class AgentAssistContainerDev extends AALightningElement {
   @api recordId;
-  @wire(getRecord, { recordId: '$recordId', fields: FIELDS }) voiceCall;
+  // Configure these values in Lightning App Builder:
+  // Drag and drop agentAssistContainerModule onto page, select, and fill inputs
+  @api debugMode; // e.g. false
+  @api endpoint; // e.g. https://your-ui-connector-endpoint.a.run.app
+  @api features; // e.g. CONVERSATION_SUMMARIZATION,KNOWLEDGE_ASSIST_V2,SMART_REPLY,AGENT_COACHING (https://cloud.google.com/agent-assist/docs/ui-modules-container-documentation)
+  @api conversationProfile; // e.g. projects/your-gcp-project-id/locations/your-location/conversationProfiles/your-conversation-profile-id
+  @api channel; // Either 'chat' or 'voice'
+  @api platform; // One of 'messaging', 'twilioflex', 'servicecloudvoice'
+  @api consumerKey; // SF Connected App Consumer Key
+  @api consumerSecret; // SF Connected App Consumer Secret
 
-  get CallType() {
-    return this.voiceCall.data.fields.CallType.value;
-  }
-
-  get FromPhoneNumber() {
-    return this.voiceCall.data.fields.FromPhoneNumber.value;
-  }
-
-  get ToPhoneNumber() {
-    return this.voiceCall.data.fields.ToPhoneNumber.value;
-  }
-
-  conversationId = ''
-
-  payload = '{"key": "value"}';
-  teleEvent = "No events received yet.";
-  transcript = "No transcripts received yet.";
-  previewPhoneNumber = "";
-  addParticipantPhoneNumber = "";
-  sendDigits = "";
-  comboBoxHoldValue = "Initial_Caller";
-  comboBoxResumeValue = "Initial_Caller";
-  comboBoxRemoveParticipantValue = "Agent";
-  comboBoxContactTypeValue = "PhoneNumber";
-  comboBoxAddParticipantContactTypeValue = "PhoneNumber";
-  hasRendered = false;
-
-  count = 0
-
-  constructor() {
-    super();
-    this.telephonyEventListener = this.onTelephonyEvent.bind(this);
-  }
-
-  handleClick(event) {
-    console.log('handleClick called for AgentAssistContainerDev');
-    console.log(event);
-    this.count += 1
-  }
+  googleLogoUrl = google_logo;
+  loadError = null;
+  conversationName = null
 
   connectedCallback() {
-    console.log('connectedCallback called for AgentAssistContainerDev');
+    this.debugLog("connectedCallback called for AgentAssistContainerDev");
+    this.platformCheck = {
+      isServiceCloudVoice: this.platform === 'servicecloudvoice',
+      isTwilioFlex: this.platform === 'twilioflex',
+      isMessaging: this.platform === 'messaging'
+    }
+    this.showTranscript = this.channel === "voice" || this.debugMode;
+    this.inspectConfig()
   }
+
+  async renderedCallback() {
+    this.debugLog("renderedCallback called for AgentAssistContainerDev");
+    this.token = await this.registerAuthToken(
+      this.consumerKey, this.consumerSecret, this.endpoint)
+
+    await Promise.all([
+      loadScript(this, ui_modules + "/container.js"),
+      loadScript(this, ui_modules + "/transcript.js"),
+      loadScript(this, ui_modules + "/common.js"),
+      loadStyle(this, global_styles)
+    ]);
+
+    this.initAgentAssistEvents();
+    this.initEventDragnet()
+    if (this.platformCheck.isMessaging) {
+      this.initMessaging()
+    } else if (this.platformCheck.isTwilioFlex) {
+      this.initTwilioFlex();
+    } else if (this.platformCheck.isServiceCloudVoice) {
+      this.initServiceCloudVoice();
+    }
+    this.initUIModules()
+  }
+
+
   disconnectedCallback() {
-    console.log('disconnectedCallback called for AgentAssistContainerDev');
-  }
-  renderedCallback() {
-    console.log('renderedCallback called for AgentAssistContainerDev');
-    const toolkitApi = this.template.querySelector('lightning-service-cloud-voice-toolkit-api');
-    unsubscribeFromVoiceToolkit(toolkitApi, this.telephonyEventListener);
-    // console.log('finished unsubscribing from voiceToolkit events');
-    subscribeToVoiceToolkit(toolkitApi, this.telephonyEventListener);
-    // console.log('finished subscribing to voiceToolkit events');
-  }
-
-  onTelephonyEvent(event) {
-    console.log(`[onTelephonyEvent] ${event.type}:`, event);
-    if (event.type === 'callconnected') {
-      this.conversationId = `nice-${event.detail.callId}`
-      console.log('this.conversationId', this.conversationId)
+    this.debugLog("disconnectedCallback called for AgentAssistContainerDev");
+    if (this.platformCheck.isMessaging) {
+      this.teardownMessaging()
+    } else if (this.platformCheck.isTwilioFlex) {
+      this.teardownTwilioFlex();
+    } else if (this.platformCheck.isServiceCloudVoice) {
+      this.teardownServiceCloudVoice();
     }
-    if (
-      (event.type === "callstarted" || event.type === "callconnected") &&
-      this.comboBoxRemoveParticipantValue === "Agent"
-    ) {
-      this.isTelephonyActionControlsDisabled = false;
-    }
-    if (event.type === "callended") {
-      this.isTelephonyActionControlsDisabled = true;
-    }
-
-    if (event.type === "transcript") {
-      this.transcript = JSON.stringify(event.detail);
-    }
-
-    this.teleEvent = JSON.stringify(event);
-  }
-
-  getToolkitApi() {
-    return this.template.querySelector(
-      "lightning-service-cloud-voice-toolkit-api"
-    );
-  }
-
-  get options() {
-    return [
-      { label: "INITIAL_CALLER", value: "Initial_Caller" },
-      { label: "THIRD_PARTY", value: "Third_Party" },
-    ];
-  }
-
-  get endCallOptions() {
-    return [
-      { label: "AGENT", value: "Agent" },
-      { label: "INITIAL_CALLER", value: "Initial_Caller" },
-      { label: "THIRD_PARTY", value: "Third_Party" },
-    ];
-  }
-
-  get contactOptions() {
-    return [
-      { label: "PHONE NUMBER", value: "PhoneNumber" },
-      { label: "AGENT/QUEUE ID", value: "AgentOrQueueId" },
-    ];
-  }
-
-  handleComboboxHoldChange(event) {
-    this.comboBoxHoldValue = event.detail.value;
-  }
-
-  handleComboboxResumeChange(event) {
-    this.comboBoxResumeValue = event.detail.value;
-  }
-
-  handleComboboxRemoveParticipantChange(event) {
-    this.comboBoxRemoveParticipantValue = event.detail.value;
-  }
-
-  handleComboboxContactTypeChange(event) {
-    this.comboBoxContactTypeValue = event.detail.value;
-  }
-
-  handleComboboxContactTypeAddParticipantChange(event) {
-    this.comboBoxAddParticipantContactTypeValue = event.detail.value;
-  }
-
-  changePreviewCallHandler(event) {
-    this.previewPhoneNumber = event.target.value;
-  }
-
-  changeAddParticipantHandler(event) {
-    this.addParticipantPhoneNumber = event.target.value;
-  }
-
-  changeSendDigitsHandler(event) {
-    this.sendDigits = event.target.value;
-  }
-
-  onMute() {
-    this.getToolkitApi().mute();
-  }
-
-  onUnmute() {
-    this.getToolkitApi().unmute();
-  }
-
-  onAcceptCall() {
-    this.getToolkitApi().acceptCall();
-  }
-
-  onDeclineCall() {
-    this.getToolkitApi().declineCall();
-  }
-
-  onEndCall() {
-    this.getToolkitApi().endCall(this.comboBoxRemoveParticipantValue);
-  }
-
-  onSendDigits() {
-    this.getToolkitApi().sendDigits(this.sendDigits);
-  }
-
-  onPauseRecording() {
-    this.getToolkitApi().pauseRecording();
-  }
-
-  onResumeRecording() {
-    this.getToolkitApi().resumeRecording();
-  }
-
-  onHold() {
-    this.getToolkitApi().hold(this.comboBoxHoldValue);
-  }
-
-  onResume() {
-    this.getToolkitApi().resume(this.comboBoxResumeValue);
-  }
-
-  onSwap() {
-    this.getToolkitApi().swap();
-  }
-
-  onMerge() {
-    this.getToolkitApi().merge();
-  }
-
-  onStartPreviewCall() {
-    this.getToolkitApi().startPreviewCall(this.previewPhoneNumber);
-  }
-
-  onAddParticipant() {
-    this.getToolkitApi().addParticipant(
-      this.comboBoxAddParticipantContactTypeValue,
-      this.addParticipantPhoneNumber,
-      false
-    );
-  }
-
-  onAddParticipantViaBlindTransfer() {
-    this.getToolkitApi().addParticipant(
-      this.comboBoxAddParticipantContactTypeValue,
-      this.addParticipantPhoneNumber,
-      true
-    );
+    // clears all listeners (_uiModuleEventTarget is not attached to the DOM)
+    window._uiModuleEventTarget = window._uiModuleEventTarget.cloneNode(true);
   }
 }

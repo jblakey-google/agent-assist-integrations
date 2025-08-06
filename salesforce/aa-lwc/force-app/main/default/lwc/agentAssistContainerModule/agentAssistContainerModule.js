@@ -34,7 +34,6 @@ import messageChannels from "./helpers/messageChannels";
 window.__Zone_disable_on_property = true;
 
 export default class AgentAssistContainerModule extends LightningElement {
-  @api recordId;
   @wire(MessageContext) messageContext;
   @wire(getRecord, { recordId: "$recordId", fields: ["Contact.Phone"] }) contact;
   get contactPhone() {

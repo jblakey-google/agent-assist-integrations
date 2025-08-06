@@ -1,144 +1,37 @@
+<!--
+ Copyright 2025 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
 <template>
-    <lightning-service-cloud-voice-toolkit-api></lightning-service-cloud-voice-toolkit-api>
-
-    <h1>Agent Assist Container Development</h1>
-    <p>This is a placeholder for the Agent Assist Container Development component.</p>
-    <p>Further development will include dynamic content and interaction capabilities.</p>
-    <p>Stay tuned for updates!!!</p>
-    <p>Click Count: {count}</p>
-    <button onclick={handleClick}>Click Me</button>
-
-    <lightning-card title="LWC Service Cloud Voice Toolkit API Tester">
-        <lightning-button variant="brand" label="Subscribe" onclick={onSubscribe} class="slds-is-static slds-m-left_medium "></lightning-button>
-        <lightning-button variant="brand" label="Unsubscribe" onclick={onUnsubscribe} class="slds-is-static slds-m-left_medium "></lightning-button>
-        
-        <p class="slds-text-title_caps slds-p-horizontal_medium slds-p-top_small">LATEST EVENT</p>
-        <p class="slds-p-horizontal_medium slds-p-bottom_medium">
-            <lightning-formatted-text value={teleEvent}></lightning-formatted-text>
-        </p>
-        
-        <p class="slds-text-title_caps slds-p-horizontal_medium">LATEST TRANSCRIPT</p>
-        <p class="slds-p-horizontal_medium slds-p-bottom_medium">
-            <lightning-formatted-text value={transcript}></lightning-formatted-text>
-        </p>
-        
-        <div class="slds-grid">
-            <lightning-input label="INVOKE NEXT BEST ACTION" class="slds-p-horizontal_medium flex-input" value={payload} placeholder="\{&quot;key&quot;: &quot;value&quot;}" onchange={changeHandler}></lightning-input>
-            <lightning-button variant="brand" label="Invoke" onclick={onInvokeNBA}></lightning-button>
-        </div>
-
-        <div class="slds-grid slds-p-bottom_medium">
-            <lightning-input label="Preview Dialer" class="slds-p-horizontal_medium flex-input" value={previewPhoneNumber} placeholder="xxx-xxx-xxxx" onchange={changePreviewCallHandler}></lightning-input>
-            <lightning-button variant="brand" label="Preview Dial" onclick={onStartPreviewCall}></lightning-button>
-        </div>
-
-        <template lwc:if={voiceCall.data}>
-            <p class="slds-text-title_caps slds-p-horizontal_medium slds-p-top_small">VOICECALL DETAILS</p>
-            <p class="slds-p-horizontal_medium">
-                Call Type: <lightning-formatted-text value={CallType}></lightning-formatted-text>
-            </p>
-            <p class="slds-p-horizontal_medium">
-                Caller Number: <lightning-formatted-text value={FromPhoneNumber}></lightning-formatted-text>
-            </p>
-            <p class="slds-p-horizontal_medium">
-                Recipient Number: <lightning-formatted-text value={ToPhoneNumber}></lightning-formatted-text>
-            </p>
-        </template>
-        
-
-        <p class="slds-text-title_caps slds-p-horizontal_medium slds-p-top_medium">TELEPHONY ACTIONS</p>
-
-        <div class="slds-p-horizontal_medium">
-            <div class="slds-grid">
-                <lightning-button variant="brand" label="Mute Call" onclick={onMute} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-                <lightning-button variant="brand" label="Unmute Call" onclick={onUnmute} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-            
-            <div class="slds-grid">
-            <lightning-combobox
-            name="hold"
-            label="Hold Participant type"
-            value={comboBoxHoldValue}
-            placeholder="Select Participant type"
-            class="slds-p-right_small"
-            options={options}
-            onchange={handleComboboxHoldChange} ></lightning-combobox>
-            <lightning-button variant="brand" label="Hold" onclick={onHold} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-
-            <div class="slds-grid">
-                <lightning-combobox
-                name="resume"
-                label="Resume Participant type"
-                value={comboBoxResumeValue}
-                placeholder="Select Participant type"
-                class="slds-p-right_small"
-                options={options}
-                onchange={handleComboboxResumeChange} ></lightning-combobox>
-            <lightning-button variant="brand" label="Resume" onclick={onResume} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-
-            </br>  
-
-            <div class="slds-grid">
-                <lightning-combobox
-                name="contactType"
-                label="Contact Type"
-                value={comboBoxAddParticipantContactTypeValue}
-                placeholder="Select Contact type"
-                class="slds-p-right_small"
-                options={contactOptions}
-                onchange={handleComboboxContactTypeAddParticipantChange} disabled={isTelephonyActionControlsDisabled}></lightning-combobox>
-                <lightning-input label="Add participant" class="slds-p-right_small" value={addParticipantPhoneNumber} onchange={changeAddParticipantHandler} disabled={isTelephonyActionControlsDisabled}></lightning-input>    
-                <div class="slds-grid"><lightning-button variant="brand" label="Add Participant" onclick={onAddParticipant} disabled={isTelephonyActionControlsDisabled}></lightning-button></div>
-            </div>
-
-            </br>            
-
-            <div class="slds-grid">
-                <lightning-combobox
-                name="contactType"
-                label="Contact Type"
-                value={comboBoxAddParticipantContactTypeValue}
-                placeholder="Select Contact type"
-                class="slds-p-right_small"
-                options={contactOptions}
-                onchange={handleComboboxContactTypeAddParticipantChange} disabled={isTelephonyActionControlsDisabled}></lightning-combobox>
-                <lightning-input label="Blind Transfer" class="slds-p-right_small" value={addParticipantPhoneNumber} onchange={changeAddParticipantHandler} disabled={isTelephonyActionControlsDisabled}></lightning-input>    
-                <div class="slds-grid"><lightning-button variant="brand" label="Blind Transfer" onclick={onAddParticipantViaBlindTransfer} disabled={isTelephonyActionControlsDisabled}></lightning-button></div>
-            </div>
-
-            <div class="slds-grid">
-                <lightning-button variant="brand" label="Pause Recording" onclick={onPauseRecording} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-                <lightning-button variant="brand" label="Resume Recording" onclick={onResumeRecording} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-
-            <div class="slds-grid">
-                <lightning-button variant="brand" label="Merge Call" onclick={onMerge} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-                <lightning-button variant="brand" label="Swap Call" onclick={onSwap} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-
-            <div class="slds-grid">
-                <lightning-input label="Send Digits" class="slds-p-right_small" value={sendDigits} onchange={changeSendDigitsHandler} data-id='sendDigits' disabled={isTelephonyActionControlsDisabled}></lightning-input>
-                <lightning-button variant="brand" label="Send Digits" onclick={onSendDigits} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-
-            <div class="slds-grid">
-                <lightning-button variant="brand" label="Accept Call" onclick={onAcceptCall} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-                <lightning-button variant="brand" label="Decline Call" onclick={onDeclineCall} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-
-            <div class="slds-grid">
-                <lightning-combobox
-                name="resume"
-                label="Remove Participant type"
-                value={comboBoxRemoveParticipantValue}
-                placeholder="Select Participant type"
-                class="slds-p-right_small"
-                options={endCallOptions}
-                onchange={handleComboboxRemoveParticipantChange} ></lightning-combobox>
-                <lightning-button variant="brand" label="End Call" onclick={onEndCall} disabled={isTelephonyActionControlsDisabled}></lightning-button>
-            </div>
-        </div>
-    </lightning-card>
+  <div class="agent-assist-component">
+    <div class="load-error" lwc:if={loadError} >
+      <h3>Load Error</h3>
+      <p>{loadError.message}</p>
+    </div>
+    <div class="transcript-container hidden" lwc:if={showTranscript} >
+      <h3>Transcript</h3>
+      <div class="agent-assist-transcript" lwc:dom="manual"></div>
+    </div>
+    <div class="agent-assist-container" lwc:dom="manual"></div>
+    <lightning-service-cloud-voice-toolkit-api
+      lwc:if={platformCheck.isServiceCloudVoice}
+      lwc:ref="serviceCloudVoiceToolkitApi">
+    </lightning-service-cloud-voice-toolkit-api>
+    <lightning-conversation-toolkit-api
+      lwc:if={platformCheck.isMessaging}
+      lwc:ref="conversationToolkitApi">
+    </lightning-conversation-toolkit-api>
+  </div>
 </template>
