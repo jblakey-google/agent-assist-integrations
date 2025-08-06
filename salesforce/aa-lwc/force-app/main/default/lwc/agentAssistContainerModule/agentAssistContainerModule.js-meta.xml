@@ -33,4 +33,7 @@
       <property name="consumerSecret" type="String" />
     </targetConfig>
   </targetConfigs>
+  <capabilities>
+    <capability>lightning__ServiceCloudVoiceToolkitApi</capability>
+  </capabilities>
 </LightningComponentBundle>
