@@ -89,7 +89,6 @@ export default class AgentAssistContainerDev extends AALightningElement {
     this.initUIModules()
   }
 
-
   disconnectedCallback() {
     this.debugLog("disconnectedCallback called for AgentAssistContainerDev");
     if (this.platformCheck.isMessaging) {
