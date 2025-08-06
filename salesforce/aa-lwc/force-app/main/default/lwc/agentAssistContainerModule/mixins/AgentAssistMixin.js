@@ -144,7 +144,6 @@ const AgentAssistMixin = (BaseClass) =>
         const transcriptContainerEl = this.template.querySelector(
           ".agent-assist-transcript"
         );
-        console.log(transcriptContainerEl)
         const transcriptEl = document.createElement("agent-assist-transcript");
         transcriptEl.setAttribute("namespace", this.recordId);
         transcriptContainerEl.appendChild(transcriptEl);
@@ -157,22 +156,8 @@ const AgentAssistMixin = (BaseClass) =>
       const containerContainerEl = this.template.querySelector(
         ".agent-assist-container"
       );
-      // TODO: Some of these can be removed?? UIM V2?
-      let attributes = [
-        ["agent-desktop", "Custom"],
-        ["auth-token", this.token],
-        ["channel", this.channel],
-        ["conversation-profile", this.conversationProfile],
-        ["custom-api-endpoint", this.endpoint],
-        ["event-based-library", "SocketIo"],
-        ["features", this.features],
-        ["namespace", this.recordId],
-        ["notifier-server-endpoint", this.endpoint],
-        ["omit-script-nonce", "true"]
-      ];
-      console.log(attributes)
-
-      attributes.forEach((attr) => containerEl.setAttribute(attr[0], attr[1]));
+      containerEl.setAttribute('features', this.features)
+      containerEl.setAttribute('namespace', this.recordId)
 
       // Create the UI Modules Connector
       const connector = new UiModulesConnector();
@@ -205,7 +190,7 @@ const AgentAssistMixin = (BaseClass) =>
           this.debugLog("UiModulesConnector initialized with connector:");
           console.log(connector)
         }
-        // Make the UiM elements visible and hide the empty state
+        // Make the UI Modules visible
         containerContainerEl.classList.remove("hidden");
         if (this.showTranscript) {
           const transcriptContainerEl = this.template.querySelector(
