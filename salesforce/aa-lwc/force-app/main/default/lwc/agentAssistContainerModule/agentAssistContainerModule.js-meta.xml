@@ -24,16 +24,20 @@
     <target>lightning__RecordPage</target>
   </targets>
   <targetConfigs>
-    <targetConfig targets="lightning__RecordPage">
-      <property name="endpoint" type="String" />
-      <property name="features" type="String" />
-      <property name="conversationProfile" type="String" />
-      <property name="channel" type="String" default="chat" />
-      <property name="consumerKey" type="String" />
-      <property name="consumerSecret" type="String" />
-    </targetConfig>
+      <targetConfig targets="lightning__RecordPage">
+          <property name="debugMode" type="Boolean" default="true" />
+          <property name="endpoint" type="String"
+              default="https://ui-connector-123456.us-central1.run.app" />
+          <property name="features" type="String" default="CONVERSATION_SUMMARIZATION" />
+          <property name="conversationProfile" type="String"
+              default="projects/{project-id}/locations/{location-id}/conversation-profiles/{profile-id}" />
+          <property name="channel" type="String" default="chat" />
+          <property name="platform" type="String" default="messaging" />
+          <property name="consumerKey" type="String" default="abc123" />
+          <property name="consumerSecret" type="String" default="def456" />
+      </targetConfig>
   </targetConfigs>
   <capabilities>
-    <capability>lightning__ServiceCloudVoiceToolkitApi</capability>
+      <capability>lightning__ServiceCloudVoiceToolkitApi</capability>
   </capabilities>
 </LightningComponentBundle>

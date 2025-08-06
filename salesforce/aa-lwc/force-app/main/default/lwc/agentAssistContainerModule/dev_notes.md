@@ -32,4 +32,11 @@ messaging
 718995E1FE87118D8E3E11862EE651E520E2B6EFD7A9A0EEACCD5B2C3485D963
 ```
 
+```sh
+# Smart reply sample prompts
+Can you find me an expensive place to stay that is located in the east?
+I'm looking for an expensive restaurant that serves Thai food, please.
+Hi, I need a hotel that includes free wifi in the north of Cambridge.
+```
+
 TODO: Need to document the new platform property in the Chat and Voice public docs

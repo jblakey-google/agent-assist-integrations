@@ -16,7 +16,7 @@
   margin-bottom: 1rem;
 }
 
-/* Fix modal scrolling */
+/* Fixes modal scrolling */
 .summary-dialog .summary__content-wrapper .summary__content {
   max-height: unset;
 }
