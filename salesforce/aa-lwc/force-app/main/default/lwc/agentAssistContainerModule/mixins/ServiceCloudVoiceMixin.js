@@ -88,9 +88,7 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
     }
 
     getToolkitApi() {
-      return this.template.querySelector(
-        "lightning-service-cloud-voice-toolkit-api"
-      );
+      return this.refs.serviceCloudVoiceToolkitApi;
     }
 
 

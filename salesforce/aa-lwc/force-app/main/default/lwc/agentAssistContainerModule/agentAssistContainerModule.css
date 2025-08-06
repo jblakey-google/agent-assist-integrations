@@ -29,8 +29,8 @@
 
 /* Sets a max height and fixed height on the transcript to support (auto) scrolling */
 .agent-assist-transcript > * {
-  max-height: 671px;
-  height: 671px;
+  max-height: 644px;
+  height: 644px;
 }
 
 /* Hides a dimensionless LWC specific element that supports Messaging for In-App and Web */
@@ -106,22 +106,43 @@ lightning-service-cloud-voice-toolkit-api {
 
 /* Transcript =============================================================== */
 .transcript-container {
-  border: 1px solid #ddd;
+  border: none;
+  border-right: 1px solid rgb(189, 193, 198);
   background: #fff;
   flex: 1;
   min-width: 240px;
 }
 
 .transcript-container h3 {
-  background-color: #f1f3f4 !important;
-  border-bottom: 1px solid #dadce0;
+  background-color: #f1f3f4;
+  border-bottom: 1px solid rgb(189, 193, 198);
   color: #5f6368;
-  padding: 7px 11px;
+  padding: 22px 16px 18px;
   font:
-    500 16px/22px Google Sans,
+    300 18px/24px Google Sans,
     Helvetica Neue,
     sans-serif;
 }
+
+.transcript-container.dark-mode {
+    background: #212124;
+    border-right: 1px solid #5f6368
+}
+
+.transcript-container.dark-mode h3 {
+    background: #3c4043;
+    border-color: #212124;
+    color: rgb(218, 220, 224);
+}
+
+.transcript-container.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: rgb(95, 99, 104);
+}
+
+.agent-assist-transcript .conversation-container {
+  padding: 8px 0;
+}
+
 
 /* Fixes the participant role icon */
 .container .icon-container .role-icon {
