@@ -30,14 +30,81 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
   class extends BaseClass {
     @wire(getRecord, { recordId: "$recordId", fields: FIELDS }) voiceCall;
 
+    get CallType() {
+      return this.voiceCall.data.fields.CallType.value;
+    }
+
+    get FromPhoneNumber() {
+      return this.voiceCall.data.fields.FromPhoneNumber.value;
+    }
+
+    get ToPhoneNumber() {
+      return this.voiceCall.data.fields.ToPhoneNumber.value;
+    }
+
+    get options() {
+      return [
+        { label: "INITIAL_CALLER", value: "Initial_Caller" },
+        { label: "THIRD_PARTY", value: "Third_Party" }
+      ];
+    }
+
+    get endCallOptions() {
+      return [
+        { label: "AGENT", value: "Agent" },
+        { label: "INITIAL_CALLER", value: "Initial_Caller" },
+        { label: "THIRD_PARTY", value: "Third_Party" }
+      ];
+    }
+
+    get contactOptions() {
+      return [
+        { label: "PHONE NUMBER", value: "PhoneNumber" },
+        { label: "AGENT/QUEUE ID", value: "AgentOrQueueId" }
+      ];
+    }
+
+    constructor() {
+      super();
+      this.telephonyEventListener = this.onTelephonyEvent.bind(this);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Init & Teardown
+    ////////////////////////////////////////////////////////////////////////////
+
     initServiceCloudVoice() {
-      this.debugLog('initServiceCloudVoice called')
+      // Set up Agent Assist UIM to work with Service Cloud Voice.
+      this.debugLog("initServiceCloudVoice called");
+      const toolkitApi = this.getToolkitApi();
+      this.unsubscribeFromVoiceToolkit(toolkitApi, this.telephonyEventListener);
+      this.subscribeToVoiceToolkit(toolkitApi, this.telephonyEventListener);
     }
 
     teardownServiceCloudVoice() {
-      this.debugLog('teardownServiceCloudVoice called')
+      // Teardown Agent Assist UIM Service Cloud Voice.
+      this.debugLog("teardownServiceCloudVoice called");
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Setup Event Listeners and Subscriptions
+    ////////////////////////////////////////////////////////////////////////////
+
+    subscribeToVoiceToolkit(toolkitApi, telephonyEventListener) {
+      for (const eventName of this.scvEventNames) {
+        toolkitApi.addEventListener(eventName, telephonyEventListener);
+      }
+    }
+
+    unsubscribeFromVoiceToolkit(toolkitApi, telephonyEventListener) {
+      for (const eventName of this.scvEventNames) {
+        toolkitApi.addEventListener(eventName, telephonyEventListener);
+      }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Handle Events
+    ////////////////////////////////////////////////////////////////////////////
 
     scvEventNames = [
       "callstarted",
@@ -70,67 +137,8 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
     comboBoxContactTypeValue = "PhoneNumber";
     comboBoxAddParticipantContactTypeValue = "PhoneNumber";
 
-    constructor() {
-      super();
-      this.telephonyEventListener = this.onTelephonyEvent.bind(this);
-    }
-
-    get CallType() {
-      return this.voiceCall.data.fields.CallType.value;
-    }
-
-    get FromPhoneNumber() {
-      return this.voiceCall.data.fields.FromPhoneNumber.value;
-    }
-
-    get ToPhoneNumber() {
-      return this.voiceCall.data.fields.ToPhoneNumber.value;
-    }
-
     getToolkitApi() {
       return this.refs.serviceCloudVoiceToolkitApi;
-    }
-
-
-    subscribeToVoiceToolkit(toolkitApi, telephonyEventListener) {
-      for (const eventName of this.scvEventNames) {
-        toolkitApi.addEventListener(eventName, telephonyEventListener);
-      }
-    }
-
-    unsubscribeFromVoiceToolkit(toolkitApi, telephonyEventListener) {
-      for (const eventName of this.scvEventNames) {
-        toolkitApi.addEventListener(eventName, telephonyEventListener);
-      }
-    }
-
-    initServiceCloudVoice() {
-      console.log("initServiceCloudVoice called for AgentAssistContainerDev");
-      const toolkitApi = this.getToolkitApi();
-      this.unsubscribeFromVoiceToolkit(toolkitApi, this.telephonyEventListener);
-      this.subscribeToVoiceToolkit(toolkitApi, this.telephonyEventListener);
-    }
-
-    get options() {
-      return [
-        { label: "INITIAL_CALLER", value: "Initial_Caller" },
-        { label: "THIRD_PARTY", value: "Third_Party" }
-      ];
-    }
-
-    get endCallOptions() {
-      return [
-        { label: "AGENT", value: "Agent" },
-        { label: "INITIAL_CALLER", value: "Initial_Caller" },
-        { label: "THIRD_PARTY", value: "Third_Party" }
-      ];
-    }
-
-    get contactOptions() {
-      return [
-        { label: "PHONE NUMBER", value: "PhoneNumber" },
-        { label: "AGENT/QUEUE ID", value: "AgentOrQueueId" }
-      ];
     }
 
     onTelephonyEvent(event) {
