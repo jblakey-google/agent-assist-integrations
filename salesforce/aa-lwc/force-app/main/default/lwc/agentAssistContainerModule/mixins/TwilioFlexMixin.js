@@ -27,30 +27,59 @@ const TwilioFlexMixin = (BaseClass) =>
       return getFieldValue(this.contact.data, "Contact.Phone");
     }
 
-    async initTwilioFlex() {
-      this.debugLog('initTwilioFlex called')
-      this.conversationName = await this.getConversationName(this.contactPhone);
+    ////////////////////////////////////////////////////////////////////////////
+    // Init & Teardown
+    ////////////////////////////////////////////////////////////////////////////
 
+    async initTwilioFlex() {
+      // Set up Agent Assist UIM to work with Twilio Flex
+      this.debugLog("initTwilioFlex called");
+      await this.getConversationName(this.contactPhone);
+      if (
+        !this.conversationName ||
+        (await this.isConversationCompleted(this.contactPhone))
+      ) {
+        this.pollForConversationName(this.contactPhone);
+      }
+      this.listenToAgentAssistEventsForTwilioFlex();
+    }
+
+    teardownTwilioFlex() {
+      // Clean up Agent Assist UIM Twilio Flex
+      this.debugLog("teardownTwilioFlex called");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Setup Event Listeners and Subscriptions
+    ////////////////////////////////////////////////////////////////////////////
+
+    listenToAgentAssistEventsForTwilioFlex() {
+      this.debugLog("listenToAgentAssistEventsForTwilioFlex called");
+      // Handle Agent Assist events
       addAgentAssistEventListener(
         "conversation-completed",
-        async () => {
-          const summarizationButton = this.template.querySelector(
-            ".generate-summary-footer button"
-          );
-          summarizationButton.dispatch("click");
-          dispatchAgentAssistEvent(
-            "conversation-summarization-requested",
-            { detail: { conversationName: this.conversationName } },
-            { namespace: this.recordId }
-          );
-          await conversationName.delConversationName(this.contactPhone);
-        },
+        this.handleConversationEndedForTwilioFlex,
         { namespace: this.recordId }
       );
     }
 
-    teardownTwilioFlex() {
-      this.debugLog('teardownTwilioFlex called')
+    ////////////////////////////////////////////////////////////////////////////
+    // Handle Events
+    ////////////////////////////////////////////////////////////////////////////
+
+    handleConversationEndedForTwilioFlex() {
+      // Generate a summary when a Twilio Flex conversation ends
+      this.debugLog("handleConversationEndedForTwilioFlex called");
+      const summarizationButton = this.template.querySelector(
+        ".generate-summary-footer button"
+      );
+      summarizationButton.dispatchEvent(new MouseEvent("click"));
+      dispatchAgentAssistEvent(
+        "conversation-summarization-requested",
+        { detail: { conversationName: this.conversationName } },
+        { namespace: this.recordId }
+      );
+      this.pollForConversationName(this.contactPhone);
     }
   };
 

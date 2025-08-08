@@ -35,13 +35,13 @@ AALightningElement = MessagingMixin(AALightningElement);
 AALightningElement = TwilioFlexMixin(AALightningElement);
 
 // This ZoneJS patch must be disabled for UI modules to work with Lightning Web Security.
-window.__Zone_disable_on_property = true; // TODO: This is possibly not true anymore, remove if so
+window.__Zone_disable_on_property = true;
 // Generally useful flags for UIM debugging and environment configuration.
 // window._uiModuleFlags = { debug: true };
 
 export default class AgentAssistContainerDev extends AALightningElement {
   @api recordId;
-  // Configure these values in Lightning App Builder:
+  // Configure these LWC properties in Lightning App Builder:
   // Drag and drop agentAssistContainerModule onto page, select, and fill inputs
   @api debugMode; // e.g. false
   @api endpoint; // e.g. https://your-ui-connector-endpoint.a.run.app
@@ -54,24 +54,32 @@ export default class AgentAssistContainerDev extends AALightningElement {
 
   googleLogoUrl = google_logo;
   loadError = null;
-  conversationName = null
+  conversationName = null;
 
   connectedCallback() {
-    this.debugLog("connectedCallback called for AgentAssistContainerDev");
+    this.debugLog("connectedCallback called");
+
+    // Before renderedCallback, work with UI Modules config
     this.platformCheck = {
-      isServiceCloudVoice: this.platform === 'servicecloudvoice',
-      isTwilioFlex: this.platform === 'twilioflex',
-      isMessaging: this.platform === 'messaging'
-    }
+      isServiceCloudVoice: this.platform === "servicecloudvoice",
+      isTwilioFlex: this.platform === "twilioflex",
+      isMessaging: this.platform === "messaging"
+    };
     this.showTranscript = this.channel === "voice" || this.debugMode;
-    this.inspectConfig()
+    this.inspectConfig();
   }
 
   async renderedCallback() {
-    this.debugLog("renderedCallback called for AgentAssistContainerDev");
-    this.token = await this.registerAuthToken(
-      this.consumerKey, this.consumerSecret, this.endpoint)
+    this.debugLog("renderedCallback called");
 
+    // Get a UI Connector auth token
+    this.token = await this.registerAuthToken(
+      this.consumerKey,
+      this.consumerSecret,
+      this.endpoint
+    );
+
+    // Load static resources
     await Promise.all([
       loadScript(this, ui_modules + "/container.js"),
       loadScript(this, ui_modules + "/transcript.js"),
@@ -79,28 +87,36 @@ export default class AgentAssistContainerDev extends AALightningElement {
       loadStyle(this, global_styles)
     ]);
 
+    // Initialize Agent Assist UI Modules
     this.initAgentAssistEvents();
-    this.initEventDragnet()
+    if (this.debugMode) this.initEventDragnet();
     if (this.platformCheck.isMessaging) {
-      this.initMessaging()
+      this.initMessaging();
     } else if (this.platformCheck.isTwilioFlex) {
-      this.initTwilioFlex();
+      await this.initTwilioFlex();
     } else if (this.platformCheck.isServiceCloudVoice) {
       this.initServiceCloudVoice();
     }
-    this.initUIModules()
+    this.debugLog(`this.conversationName: ${this.conversationName}`);
+    if (this.conversationName) this.initUIModules();
+    // this.ingestDemoContextReferences(); // For demo and testing purposes
   }
 
   disconnectedCallback() {
-    this.debugLog("disconnectedCallback called for AgentAssistContainerDev");
+    this.debugLog("disconnectedCallback called");
+
+    // Teardown platform specific setup
     if (this.platformCheck.isMessaging) {
-      this.teardownMessaging()
+      this.teardownMessaging();
     } else if (this.platformCheck.isTwilioFlex) {
       this.teardownTwilioFlex();
     } else if (this.platformCheck.isServiceCloudVoice) {
       this.teardownServiceCloudVoice();
     }
-    // clears all listeners (_uiModuleEventTarget is not attached to the DOM)
-    window._uiModuleEventTarget = window._uiModuleEventTarget.cloneNode(true);
+
+    // Clears all listeners (_uiModuleEventTarget is not attached to the DOM)
+    if (window._uiModuleEventTarget) {
+      window._uiModuleEventTarget = window._uiModuleEventTarget.cloneNode(true);
+    }
   }
 }

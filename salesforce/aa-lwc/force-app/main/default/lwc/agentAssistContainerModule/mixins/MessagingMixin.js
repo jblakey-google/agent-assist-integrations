@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { wire, api } from "lwc";
+import { wire } from "lwc";
 import {
   APPLICATION_SCOPE,
   subscribe,
@@ -25,27 +25,21 @@ import {
 import conversationAgentSendChannel from "@salesforce/messageChannel/lightning__conversationAgentSend";
 import conversationEndUserMessageChannel from "@salesforce/messageChannel/lightning__conversationEndUserMessage";
 import conversationEndedChannel from "@salesforce/messageChannel/lightning__conversationEnded";
+import tabClosedChannel from "@salesforce/messageChannel/lightning__tabClosed";
 
 const MessagingMixin = (BaseClass) =>
   class extends BaseClass {
     @wire(MessageContext) messageContext;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Init & Teardown
+    ////////////////////////////////////////////////////////////////////////////
+
     initMessaging() {
       // Set up Agent Assist UIM to work with Messaging for In-App and Web
-      this.generateConversationName()
+      this.generateConversationName();
       this.subscribeToMessageChannels();
-
-      // Handle Agent Assist events
-      addAgentAssistEventListener(
-        "smart-reply-selected",
-        (event) => this.handleSmartReplySelected(event),
-        { namespace: this.recordId }
-      );
-      addAgentAssistEventListener(
-        "agent-coaching-response-selected",
-        (event) => this.handleAgentCoachingResponseSelected(event),
-        { namespace: this.recordId }
-      );
+      this.listenToAgentAssistEventsForMessaging();
     }
 
     teardownMessaging() {
@@ -53,26 +47,66 @@ const MessagingMixin = (BaseClass) =>
       this.unsubscribeFromMessagingChannels();
     }
 
-    handleConversationEnded(event) {
-      // Generate a summary when a Messaging conversation ends.
-      if (this.recordId !== event.recordId) return;
-      if (this.features.includes("CONVERSATION_SUMMARIZATION")) {
-        dispatchAgentAssistEvent(
-          "conversation-completed",
-          { detail: { conversationName: this.conversationName } },
-          { namespace: this.recordId }
-        );
+    ////////////////////////////////////////////////////////////////////////////
+    // Setup Event Listeners and Subscriptions
+    ////////////////////////////////////////////////////////////////////////////
 
-        // Creates a synthetic click event to trigger summarization modal.
-        const summarizationButton = this.template.querySelector(
-          ".generate-summary-footer button"
-        );
-        summarizationButton.dispatchEvent(new Event("click"));
-      }
+    listenToAgentAssistEventsForMessaging() {
+      // Handle Agent Assist events
+      addAgentAssistEventListener(
+        "smart-reply-selected",
+        (event) => this.handleSmartReplySelectedForMessaging(event),
+        { namespace: this.recordId }
+      );
+      addAgentAssistEventListener(
+        "agent-coaching-response-selected",
+        (event) => this.handleAgentCoachingResponseSelectedForMessaging(event),
+        { namespace: this.recordId }
+      );
     }
 
-    handleMessageSend(senderRole, message) {
-      // Send new Messaging messages to the UI Connector.
+    subscribeToMessageChannels() {
+      // Attach handler functions to Messaging events
+      subscribe(
+        this.messageContext,
+        conversationAgentSendChannel,
+        (event) => this.handleMessageSendForMessaging("HUMAN_AGENT", event),
+        { scope: APPLICATION_SCOPE }
+      );
+      subscribe(
+        this.messageContext,
+        conversationEndUserMessageChannel,
+        (event) => this.handleMessageSendForMessaging("END_USER", event),
+        { scope: APPLICATION_SCOPE }
+      );
+      subscribe(
+        this.messageContext,
+        conversationEndedChannel,
+        (event) => this.handleConversationEndedForMessaging(event),
+        { scope: APPLICATION_SCOPE }
+      );
+      subscribe(
+        this.messageContext,
+        tabClosedChannel,
+        (event) => this.handleTabClosedForMessaging(event),
+        { scope: APPLICATION_SCOPE }
+      );
+    }
+
+    unsubscribeFromMessagingChannels() {
+      // Detach handler functions from Messaging events
+      unsubscribe(conversationAgentSendChannel);
+      unsubscribe(conversationEndUserMessageChannel);
+      unsubscribe(conversationEndedChannel);
+      unsubscribe(tabClosedChannel);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Handle Events
+    ////////////////////////////////////////////////////////////////////////////
+
+    handleMessageSendForMessaging(senderRole, message) {
+      // Send new Messaging messages to the UI Connector
       if (this.recordId !== message.recordId) return;
       dispatchAgentAssistEvent(
         "analyze-content-requested",
@@ -89,53 +123,50 @@ const MessagingMixin = (BaseClass) =>
       );
     }
 
-    async handleSmartReplySelected(event) {
+    async handleSmartReplySelectedForMessaging(event) {
+      // Handle Smart Reply selection by the agent
       await this.refs.conversationToolkitApi.setAgentInput(this.recordId, {
         text: event.detail.answer.reply
       });
     }
 
-    async handleAgentCoachingResponseSelected(event) {
+    async handleAgentCoachingResponseSelectedForMessaging(event) {
+      // Handle Agent Coaching response selection
       await this.refs.conversationToolkitApi.setAgentInput(this.recordId, {
         text: event.detail.selectedResponse
       });
     }
 
-    subscribeToMessageChannels() {
-      // attach handler functions to Messaging events.
-      subscribe(
-        this.messageContext,
-        conversationAgentSendChannel,
-        (event) => this.handleMessageSend("HUMAN_AGENT", event),
-        { scope: APPLICATION_SCOPE }
-      );
-      subscribe(
-        this.messageContext,
-        conversationEndUserMessageChannel,
-        (event) => this.handleMessageSend("END_USER", event),
-        { scope: APPLICATION_SCOPE }
-      );
-      subscribe(
-        this.messageContext,
-        conversationEndedChannel,
-        (event) => this.handleConversationEnded(event),
-        { scope: APPLICATION_SCOPE }
-      );
+    handleConversationEndedForMessaging(event) {
+      // Generate a summary when a Messaging conversation ends
+      this.debugLog("handleConversationEnded called");
+
+      if (this.recordId !== event.recordId) return;
+      if (this.features.includes("CONVERSATION_SUMMARIZATION")) {
+        dispatchAgentAssistEvent(
+          "conversation-completed",
+          { detail: { conversationName: this.conversationName } },
+          { namespace: this.recordId }
+        );
+
+        // Give handleTabClosed opportunity to cancel summarization
+        this.cancelSummarizationTimeout = setTimeout(() => {
+          // Create a synthetic click event to trigger summarization modal
+          const summarizationButton = this.template.querySelector(
+            ".generate-summary-footer button"
+          );
+          summarizationButton.dispatchEvent(new Event("click"));
+        }, 500);
+      }
     }
 
-    generateConversationName() {
-      // Create a Dialogflow conversation name.
-      let prefix = this.conversationProfile.split('/conversationProfile')[0]
-      this.conversationId = `SF-${this.recordId}`;
-      this.conversationName = `${prefix}/conversations/${this.conversationId}`
-      this.debugLog(`this.conversationName - ${this.conversationName}`)
-    }
-
-    unsubscribeFromMessagingChannels() {
-      // Detach handler functions from Messaging events.
-      unsubscribe(conversationAgentSendChannel);
-      unsubscribe(conversationEndUserMessageChannel);
-      unsubscribe(conversationEndedChannel);
+    handleTabClosedForMessaging(event) {
+      // Handle Messaging Session tab closed event
+      this.debugLog("handleTabClosed called");
+      // Cancel summarization if the tab is closing
+      if (this.cancelSummarizationTimeout) {
+        clearTimeout(this.cancelSummarizationTimeout);
+      }
     }
   };
 
