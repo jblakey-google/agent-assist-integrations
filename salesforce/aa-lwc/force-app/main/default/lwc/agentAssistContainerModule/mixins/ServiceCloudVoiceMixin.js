@@ -107,6 +107,7 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
     ////////////////////////////////////////////////////////////////////////////
 
     scvEventNames = [
+      "audiostats",
       "callstarted",
       "callconnected",
       "callended",
@@ -123,7 +124,8 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
       "transcript",
       "wrapupended",
       "flagraise",
-      "flaglower"
+      "flaglower",
+      "note"
     ];
     payload = '{"key": "value"}';
     teleEvent = "No events received yet.";
@@ -141,11 +143,21 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
       return this.refs.serviceCloudVoiceToolkitApi;
     }
 
+    generateNiceConversationName(event) {
+      const niceBusNo = 4610247;
+      this.debugLog(event);
+      const callId = event.detail.callId;
+      const prefix = this.conversationProfile.split("/locations")[0];
+      this.conversationId = `BusNo-${niceBusNo}_ContactId-${callId}`;
+      this.conversationName = `${prefix}/conversations/${this.conversationId}`;
+    }
+
     onTelephonyEvent(event) {
       console.log(`[onTelephonyEvent] ${event.type}:`, event);
       if (event.type === "callconnected") {
-        this.conversationId = `nice-${event.detail.callId}`;
-        console.log("this.conversationId", this.conversationId);
+        this.generateNiceConversationName(event);
+        this.debugLog(`this.conversationId - ${this.conversationId}`);
+        this.debugLog(`this.conversationName - ${this.conversationName}`);
       }
       if (
         (event.type === "callstarted" || event.type === "callconnected") &&
