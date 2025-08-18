@@ -37,6 +37,8 @@ const AgentAssistMixin = (BaseClass) =>
         .then((data) => data.access_token)
         .catch((err) => console.error(err));
 
+      this.debugLog("access_token", access_token);
+
       return await fetch(this.endpoint + "/register", {
         method: "POST",
         headers: {
@@ -170,13 +172,14 @@ const AgentAssistMixin = (BaseClass) =>
     generateConversationName() {
       // Generate a Dialogflow conversation name.
       // Works when the Dialogflow conversation isn't created outside SF.
-      let prefix = this.conversationProfile.split("/conversationProfile")[0];
+      let prefix = this.conversationProfile.split("/locations")[0];
       this.conversationId = `SF-${this.recordId}`;
       this.conversationName = `${prefix}/conversations/${this.conversationId}`;
       this.debugLog(`this.conversationName - ${this.conversationName}`);
     }
 
     createRequestOptions(method, body = null) {
+      // Construct fetch authed request options object
       const options = {
         method: method,
         headers: {

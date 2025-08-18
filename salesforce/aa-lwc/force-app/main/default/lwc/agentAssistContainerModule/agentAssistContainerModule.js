@@ -39,7 +39,7 @@ window.__Zone_disable_on_property = true;
 // Generally useful flags for UIM debugging and environment configuration.
 // window._uiModuleFlags = { debug: true };
 
-export default class AgentAssistContainerDev extends AALightningElement {
+export default class AgentAssistContainerModule extends AALightningElement {
   @api recordId;
   // Configure these LWC properties in Lightning App Builder:
   // Drag and drop agentAssistContainerModule onto page, select, and fill inputs
@@ -97,8 +97,14 @@ export default class AgentAssistContainerDev extends AALightningElement {
     } else if (this.platformCheck.isServiceCloudVoice) {
       this.initServiceCloudVoice();
     }
-    this.debugLog(`this.conversationName: ${this.conversationName}`);
-    if (this.conversationName) this.initUIModules();
+    this.debugLog(`waiting for a conversationName to init UI Modules...`);
+    const waitInterval = setInterval(() => {
+      if (this.conversationName) {
+        clearInterval(waitInterval);
+        this.debugLog(`this.conversationName: ${this.conversationName}`);
+        this.initUIModules();
+      }
+    }, 100);
     // this.ingestDemoContextReferences(); // For demo and testing purposes
   }
 
