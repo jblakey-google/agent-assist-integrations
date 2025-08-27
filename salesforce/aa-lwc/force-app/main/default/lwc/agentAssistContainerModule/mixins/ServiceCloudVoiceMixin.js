@@ -16,11 +16,29 @@
 
 import { wire } from "lwc";
 import { getRecord } from "lightning/uiRecordApi";
+// import CALLER_ID from "@salesforce/schema/VoiceCall.CallerId";
+// import CALLER_ID_TYPE from "@salesforce/schema/VoiceCall.CallerIdType";
+// import CONFERENCE_KEY from "@salesforce/schema/VoiceCall.ConferenceKey";
+// import CONVERSATION_ID from "@salesforce/schema/VoiceCall.ConversationId";
+// import ID from "@salesforce/schema/VoiceCall.Id";
+// import NAME from "@salesforce/schema/VoiceCall.Name";
+// import RELATED_RECORD_ID from "@salesforce/schema/VoiceCall.RelatedRecordId";
+// import VENDOR_CALL_KEY from "@salesforce/schema/VoiceCall.VendorCallKey";
+// import VENDOR_TYPE from "@salesforce/schema/VoiceCall.VendorType";
 
 const FIELDS = [
   "VoiceCall.CallType",
   "VoiceCall.FromPhoneNumber",
   "VoiceCall.ToPhoneNumber"
+  // CALLER_ID,
+  // CALLER_ID_TYPE,
+  // CONFERENCE_KEY,
+  // CONVERSATION_ID,
+  // ID,
+  // NAME,
+  // RELATED_RECORD_ID,
+  // VENDOR_CALL_KEY,
+  // VENDOR_TYPE
 ];
 
 // great examples here
@@ -41,6 +59,42 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
     get ToPhoneNumber() {
       return this.voiceCall.data.fields.ToPhoneNumber.value;
     }
+
+    // get CallerId() {
+    //   return this.voiceCall.data.fields.CallerId.value;
+    // }
+
+    // get CallerIdType() {
+    //   return this.voiceCall.data.fields.CallerIdType.value;
+    // }
+
+    // get ConferenceKey() {
+    //   return this.voiceCall.data.fields.ConferenceKey.value;
+    // }
+
+    // get ConversationId() {
+    //   return this.voiceCall.data.fields.ConversationId.value;
+    // }
+
+    // get Id() {
+    //   return this.voiceCall.data.fields.Id.value;
+    // }
+
+    // get Name() {
+    //   return this.voiceCall.data.fields.Name.value;
+    // }
+
+    // get RelatedRecordId() {
+    //   return this.voiceCall.data.fields.RelatedRecordId.value;
+    // }
+
+    // get VendorCallKey() {
+    //   return this.voiceCall.data.fields.VendorCallKey.value;
+    // }
+
+    // get VendorType() {
+    //   return this.voiceCall.data.fields.VendorType.value;
+    // }
 
     get options() {
       return [
@@ -76,6 +130,18 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
     initServiceCloudVoice() {
       // Set up Agent Assist UIM to work with Service Cloud Voice.
       this.debugLog("initServiceCloudVoice called");
+      // this.debugLog(`CallType: ${this.CallType}`);
+      // this.debugLog(`FromPhoneNumber: ${this.FromPhoneNumber}`);
+      // this.debugLog(`ToPhoneNumber: ${this.ToPhoneNumber}`);
+      // this.debugLog(`CallerId: ${this.CallerId}`);
+      // this.debugLog(`CallerIdType: ${this.CallerIdType}`);
+      // this.debugLog(`ConferenceKey: ${this.ConferenceKey}`);
+      // this.debugLog(`ConversationId: ${this.ConversationId}`);
+      // this.debugLog(`Id: ${this.Id}`);
+      // this.debugLog(`Name: ${this.Name}`);
+      // this.debugLog(`RelatedRecordId: ${this.RelatedRecordId}`);
+      // this.debugLog(`VendorCallKey: ${this.VendorCallKey}`);
+      // this.debugLog(`VendorType: ${this.VendorType}`);
       const toolkitApi = this.getToolkitApi();
       this.unsubscribeFromVoiceToolkit(toolkitApi, this.telephonyEventListener);
       this.subscribeToVoiceToolkit(toolkitApi, this.telephonyEventListener);
@@ -145,9 +211,8 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
 
     generateNiceConversationName(event) {
       const niceBusNo = 4610247;
-      this.debugLog(event);
       const callId = event.detail.callId;
-      const prefix = this.conversationProfile.split("/locations")[0];
+      const prefix = this.conversationProfile.split("/conversationProfiles")[0];
       this.conversationId = `BusNo-${niceBusNo}_ContactId-${callId}`;
       this.conversationName = `${prefix}/conversations/${this.conversationId}`;
     }
@@ -156,8 +221,6 @@ const ServiceCloudVoiceMixin = (BaseClass) =>
       console.log(`[onTelephonyEvent] ${event.type}:`, event);
       if (event.type === "callconnected") {
         this.generateNiceConversationName(event);
-        this.debugLog(`this.conversationId - ${this.conversationId}`);
-        this.debugLog(`this.conversationName - ${this.conversationName}`);
       }
       if (
         (event.type === "callstarted" || event.type === "callconnected") &&

@@ -15,7 +15,7 @@
  */
 
 import AgentAssistContainerModule from 'c/agentAssistContainerModule';
-import { createElement } from 'lwc';
+import { createElement } from "@lwc/engine-dom";
 
 describe('c-agent-assist-container-module', () => {
     afterEach(() => {

@@ -37,7 +37,7 @@ const AgentAssistMixin = (BaseClass) =>
         .then((data) => data.access_token)
         .catch((err) => console.error(err));
 
-      this.debugLog("access_token", access_token);
+      this.debugLog(`access_token: ${access_token}`);
 
       return await fetch(this.endpoint + "/register", {
         method: "POST",
@@ -124,12 +124,23 @@ const AgentAssistMixin = (BaseClass) =>
     ////////////////////////////////////////////////////////////////////////////
 
     initAgentAssistEvents() {
+      this.debugLog('initAgentAssistEvents called')
       // Add event listeners for Agent Assist UI Modules events.
-      addAgentAssistEventListener(
-        "api-connector-initialized",
-        () => this.handleApiConnectorInitialized(),
-        { namespace: this.recordId }
-      );
+      if (this.channel === "chat") {
+        this.debugLog("THIS IS A CHAT CHANNEL");
+        addAgentAssistEventListener(
+          "api-connector-initialized",
+          async () => this.handleConnectorInitialized(),
+          { namespace: this.recordId }
+        );
+      } else if (this.channel === "voice") {
+        this.debugLog("THIS IS A VOICE CHANNEL");
+        addAgentAssistEventListener(
+          "event-based-connector-initialized",
+          async () => this.handleConnectorInitialized(),
+          { namespace: this.recordId }
+        );
+      }
       addAgentAssistEventListener(
         "copy-to-clipboard",
         (event) => this.handleCopyToClipboard(event),
@@ -142,8 +153,18 @@ const AgentAssistMixin = (BaseClass) =>
       );
     }
 
-    handleApiConnectorInitialized() {
-      // Set the active conversation for UIM on API connector initialization.
+    async handleConnectorInitialized() {
+      // Ensure we have a token at this point before proceeding.
+      this.debugLog("ALERT handleConnectorInitialized called");
+      if (!this.token) {
+        this.token = await this.registerAuthToken(
+          this.consumerKey,
+          this.consumerSecret,
+          this.endpoint
+        );
+      }
+      this.debugLog(`Did we get a token? ${this.token}`);
+      // Set the active conversation for UIM on connector initialization.
       dispatchAgentAssistEvent(
         "active-conversation-selected",
         { detail: { conversationName: this.conversationName } },
@@ -172,7 +193,7 @@ const AgentAssistMixin = (BaseClass) =>
     generateConversationName() {
       // Generate a Dialogflow conversation name.
       // Works when the Dialogflow conversation isn't created outside SF.
-      let prefix = this.conversationProfile.split("/locations")[0];
+      let prefix = this.conversationProfile.split("/conversationProfiles")[0];
       this.conversationId = `SF-${this.recordId}`;
       this.conversationName = `${prefix}/conversations/${this.conversationId}`;
       this.debugLog(`this.conversationName - ${this.conversationName}`);
@@ -260,7 +281,7 @@ const AgentAssistMixin = (BaseClass) =>
               `conversationName is not COMPLETED, init UI Modules.`
             );
             clearInterval(pollingInterval);
-            this.handleApiConnectorInitialized();
+            this.handleConnectorInitialized();
             this.initUIModules();
           }
         }

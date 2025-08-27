@@ -95,12 +95,13 @@ export default class AgentAssistContainerModule extends AALightningElement {
     } else if (this.platformCheck.isTwilioFlex) {
       await this.initTwilioFlex();
     } else if (this.platformCheck.isServiceCloudVoice) {
-      this.initServiceCloudVoice();
+      await this.initServiceCloudVoice();
     }
     this.debugLog(`waiting for a conversationName to init UI Modules...`);
     const waitInterval = setInterval(() => {
       if (this.conversationName) {
         clearInterval(waitInterval);
+        this.debugLog(`this.conversationId: ${this.conversationId}`);
         this.debugLog(`this.conversationName: ${this.conversationName}`);
         this.initUIModules();
       }
