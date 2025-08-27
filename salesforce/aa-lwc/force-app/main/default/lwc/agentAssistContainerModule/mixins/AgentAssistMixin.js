@@ -124,17 +124,14 @@ const AgentAssistMixin = (BaseClass) =>
     ////////////////////////////////////////////////////////////////////////////
 
     initAgentAssistEvents() {
-      this.debugLog('initAgentAssistEvents called')
       // Add event listeners for Agent Assist UI Modules events.
       if (this.channel === "chat") {
-        this.debugLog("THIS IS A CHAT CHANNEL");
         addAgentAssistEventListener(
           "api-connector-initialized",
           async () => this.handleConnectorInitialized(),
           { namespace: this.recordId }
         );
       } else if (this.channel === "voice") {
-        this.debugLog("THIS IS A VOICE CHANNEL");
         addAgentAssistEventListener(
           "event-based-connector-initialized",
           async () => this.handleConnectorInitialized(),
@@ -155,7 +152,6 @@ const AgentAssistMixin = (BaseClass) =>
 
     async handleConnectorInitialized() {
       // Ensure we have a token at this point before proceeding.
-      this.debugLog("ALERT handleConnectorInitialized called");
       if (!this.token) {
         this.token = await this.registerAuthToken(
           this.consumerKey,
