@@ -48,7 +48,7 @@ export default class AgentAssistContainerModule extends AALightningElement {
   @api features; // e.g. CONVERSATION_SUMMARIZATION,KNOWLEDGE_ASSIST_V2,SMART_REPLY,AGENT_COACHING (https://cloud.google.com/agent-assist/docs/ui-modules-container-documentation)
   @api conversationProfile; // e.g. projects/your-gcp-project-id/locations/your-location/conversationProfiles/your-conversation-profile-id
   @api channel; // Either 'chat' or 'voice'
-  @api platform; // One of 'messaging', 'twilioflex', 'servicecloudvoice'
+  @api platform; // One of 'messaging', 'twilioflex', 'servicecloudvoice-nice'
   @api consumerKey; // SF Connected App Consumer Key
   @api consumerSecret; // SF Connected App Consumer Secret
 
@@ -61,9 +61,12 @@ export default class AgentAssistContainerModule extends AALightningElement {
 
     // Before renderedCallback, work with UI Modules config
     this.platformCheck = {
-      isServiceCloudVoice: this.platform === "servicecloudvoice",
+      isServiceCloudVoice: this.platform.includes("servicecloudvoice"),
       isTwilioFlex: this.platform === "twilioflex",
       isMessaging: this.platform === "messaging"
+    };
+    this.scvTelephonyCheck = {
+      isNice: this.platformCheck && this.platform.includes("nice")
     };
     this.showTranscript = this.channel === "voice" || this.debugMode;
     this.inspectConfig();
@@ -78,6 +81,12 @@ export default class AgentAssistContainerModule extends AALightningElement {
       this.consumerSecret,
       this.endpoint
     );
+
+    // Listen for SCV events as early as possible - otherwise events will be
+    // missed while awaiting static resources on first load.
+    if (this.platformCheck.isServiceCloudVoice) {
+      await this.initServiceCloudVoice();
+    }
 
     // Load static resources
     await Promise.all([
@@ -94,8 +103,6 @@ export default class AgentAssistContainerModule extends AALightningElement {
       this.initMessaging();
     } else if (this.platformCheck.isTwilioFlex) {
       await this.initTwilioFlex();
-    } else if (this.platformCheck.isServiceCloudVoice) {
-      await this.initServiceCloudVoice();
     }
     this.debugLog(`waiting for a conversationName to init UI Modules...`);
     const waitInterval = setInterval(() => {
