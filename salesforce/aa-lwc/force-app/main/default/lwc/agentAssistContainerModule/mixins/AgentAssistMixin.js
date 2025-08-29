@@ -98,7 +98,7 @@ const AgentAssistMixin = (BaseClass) =>
 
       // Initialize the UI Modules
       if (this.conversationName) {
-        containerContainerEl.appendChild(containerEl); // TODO: Weird error here about addEventListener not accepting options on Shadow nodes... only in debug mode though?
+        containerContainerEl.appendChild(containerEl);
         connector.init(config);
         if (this.debugMode) {
           this.debugLog("UiModulesConnector initialized with config:");
@@ -124,17 +124,20 @@ const AgentAssistMixin = (BaseClass) =>
     ////////////////////////////////////////////////////////////////////////////
 
     initAgentAssistEvents() {
+      this.debugLog("initAgentAssistEvents called");
       // Add event listeners for Agent Assist UI Modules events.
       if (this.channel === "chat") {
+        this.debugLog("initAgentAssistEvents - this.channel is 'chat'");
         addAgentAssistEventListener(
           "api-connector-initialized",
-          async () => this.handleConnectorInitialized(),
+          async () => await this.handleConnectorInitialized(),
           { namespace: this.recordId }
         );
       } else if (this.channel === "voice") {
+        this.debugLog("initAgentAssistEvents - this.channel is 'voice'");
         addAgentAssistEventListener(
           "event-based-connector-initialized",
-          async () => this.handleConnectorInitialized(),
+          async () => await this.handleConnectorInitialized(),
           { namespace: this.recordId }
         );
       }
@@ -151,15 +154,18 @@ const AgentAssistMixin = (BaseClass) =>
     }
 
     async handleConnectorInitialized() {
-      // Ensure we have a token at this point before proceeding.
-      if (!this.token) {
-        this.token = await this.registerAuthToken(
-          this.consumerKey,
-          this.consumerSecret,
-          this.endpoint
-        );
+      this.debugLog("handleConnectorInitialized called");
+
+      // Ensure we have a token before proceeding.
+      while (!this.token) {
+        this.debugLog("waiting for ui connector token...");
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      this.debugLog(`Did we get a token? ${this.token}`);
+      this.debugLog(`ui connector token: ${this.token}`);
+
+      // Poll until Dialogflow confirms the existence of the conversationName.
+      await this.pollUntilConversationExists();
+
       // Set the active conversation for UIM on connector initialization.
       dispatchAgentAssistEvent(
         "active-conversation-selected",
@@ -255,6 +261,29 @@ const AgentAssistMixin = (BaseClass) =>
             return true;
           }
         });
+    }
+
+    async pollUntilConversationExists() {
+      // Poll for this.conversationName until it Dialogflow confirms it exists.
+      const maxRetries = 15;
+      let delayMs = 100;
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const response = await fetch(
+            `${this.endpoint}/v2/${this.conversationName}`,
+            this.createRequestOptions("GET")
+          );
+          this.debugLog(`pollUntilConversationExists: ${response.status}...`);
+          if (response.status === 200) {
+            return true; // Conversation exists, exit polling
+          }
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          delayMs += 100;
+        } catch (error) {
+          this.debugLog(`pollUntilConversationExists - error: ${err}`);
+        }
+      }
+      this.debugLog(`pollUntilConversationExists - failed ${maxRetries} times`);
     }
 
     async pollForConversationName(
