@@ -1,0 +1,12 @@
+# IDE & Virtual Environment
+.vscode
+venv
+
+# Environment Variables
+.env
+
+# Commit message file
+commit.txt
+
+# Partial deployment scripts for development
+deploy-*.sh
