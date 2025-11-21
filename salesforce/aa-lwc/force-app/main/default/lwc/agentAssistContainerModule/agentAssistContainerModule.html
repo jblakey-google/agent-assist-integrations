@@ -45,12 +45,10 @@
 
     <!-- These components provide access to Salesforce APIs -->
     <lightning-service-cloud-voice-toolkit-api
-      lwc:if={platformCheck.isServiceCloudVoice}
       lwc:ref="serviceCloudVoiceToolkitApi"
     >
     </lightning-service-cloud-voice-toolkit-api>
     <lightning-conversation-toolkit-api
-      lwc:if={platformCheck.isMessaging}
       lwc:ref="conversationToolkitApi"
     >
     </lightning-conversation-toolkit-api>
