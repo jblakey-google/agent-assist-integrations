@@ -126,13 +126,13 @@ After getting valid JWT, the steps for sending Dialogflow calls are listed below
 ![](images/workflow2_proxy.png)
 
 # APIs
+
 ## Cloud Pub/Sub Interceptor
+
 The interceptor is dedicated to receiving messages posted by Cloud Pub/Sub topics. It expects suggestions for human agents, new messages, new recognition result notifications and conversation lifecycle events posted to four separate request URLs.
 
---------------------------------------------------------------------------------
-
-<details open>
-  <summary><code>POST</code> <code><b>/human-agent-assistant-event</b></code></summary>
+<details>
+<summary><code>POST</code> <code><b>/human-agent-assistant-event</b></code></summary>
 
 #### Request Body
 
@@ -140,17 +140,15 @@ The request body should be JSON data that contains a [HumanAgentAssistantEvent](
 
 #### Responses
 
-> | http code     | content-type                      | response                                                                                                                |
-> |---------------|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-> | `204`         | `application/json`                | Additional information, which is considered as a message acknowledgement by Cloud Pub/Sub.                              |
-> | `400`         | `text/plain`                        | `Bad Request: <corresponding error message>`                                                                          |
+| HTTP Code | Content-Type     | Response                                       |
+| :-------- | :--------------- | :--------------------------------------------- |
+| `204`     | `application/json` | Acknowledged.                                  |
+| `400`     | `text/plain`     | `Bad Request: <corresponding error message>` |
 
 </details>
 
---------------------------------------------------------------------------------
-
-<details open>
-  <summary><code>POST</code> <code><b>/conversation-lifecycle-event</b></code></summary>
+<details>
+<summary><code>POST</code> <code><b>/conversation-lifecycle-event</b></code></summary>
 
 #### Request Body
 
@@ -158,17 +156,15 @@ The request body should be JSON data that contains a [ConversationEvent](https:/
 
 #### Responses
 
-> | http code     | content-type                      | response                                                                                   |
-> |---------------|-----------------------------------|--------------------------------------------------------------------------------------------|
-> | `204`         | `application/json`                | Additional information, which is considered as a message acknowledgement by Cloud Pub/Sub. |
-> | `400`         | `text/plain`                      | `Bad Request: <corresponding error message>`                                               |
+| HTTP Code | Content-Type     | Response                                       |
+| :-------- | :--------------- | :--------------------------------------------- |
+| `204`     | `application/json` | Acknowledged.                                  |
+| `400`     | `text/plain`     | `Bad Request: <corresponding error message>` |
 
 </details>
 
---------------------------------------------------------------------------------
-
-<details open>
-  <summary><code>POST</code> <code><b>/new-message-event</b></code></summary>
+<details>
+<summary><code>POST</code> <code><b>/new-message-event</b></code></summary>
 
 #### Request Body
 
@@ -176,78 +172,76 @@ The request body should be JSON data that contains a [ConversationEvent](https:/
 
 #### Responses
 
-> | http code     | content-type                      | response                                                                                                                |
-> |---------------|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-> | `204`         | `application/json`                | Additional information, which is considered as a message acknowledgement by Cloud Pub/Sub.                              |
-> | `400`         | `text/raw`                        | `Bad Request: <corresponding error message>`                                                                            |
+| HTTP Code | Content-Type     | Response                                       |
+| :-------- | :--------------- | :--------------------------------------------- |
+| `204`     | `application/json` | Acknowledged.                                  |
+| `400`     | `text/plain`     | `Bad Request: <corresponding error message>` |
 
 </details>
 
---------------------------------------------------------------------------------
-
-<details open>
-  <summary><code>POST</code> <code><b>/new-recognition-result-notification-event</b></code></summary>
+<details>
+<summary><code>POST</code> <code><b>/new-recognition-result-notification-event</b></code></summary>
 
 #### Request Body
 
-The request body should be JSON data that contains a [ConversationEvent](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/ConversationEvent) [PubSubMessage](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage).data And the request body should also contains [PubSubMessage attribues](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) 'participant_role' and 'message_id'.
+The request body should be JSON data that contains a [ConversationEvent](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/ConversationEvent) as [PubSubMessage](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage).data. The request body should also contain [PubSubMessage attributes](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) 'participant_role' and 'message_id'.
 
 #### Responses
 
-> | http code     | content-type                      | response                                                                                   |
-> |---------------|-----------------------------------|--------------------------------------------------------------------------------------------|
-> | `204`         | `application/json`                | Additional information, which is considered as a message acknowledgement by Cloud Pub/Sub. |
-> | `400`         | `text/raw`                        | `Bad Request: <corresponding error message>`                                               |
+| HTTP Code | Content-Type     | Response                                       |
+| :-------- | :--------------- | :--------------------------------------------- |
+| `204`     | `application/json` | Acknowledged.                                  |
+| `400`     | `text/plain`     | `Bad Request: <corresponding error message>` |
 
 </details>
-
---------------------------------------------------------------------------------
 
 ## UI Connector
-UI Connector serves external requests via four API modules, including SocketIO APIs, Dialogflow Proxy APIs, JWT Registration API, and optional Conversation Integration Key APIs.
-1. JWT Registration API: It expects HTTP requests with valid customized tokens and returns a newly-generated JWT with 1h lifetime to the client. The API wouldn't work until the customized rule to authenticate agent clients is implemented. The encoding algorithm must be the same as the one used in the decoding, and currently ‘HS256’ is used.
-2. SocketIO APIs: They handle WebSockets connections between clients and servers, including establishing connections and sending Dialogflow events to associated clients.
-3. Dialogflow Proxy APIs: It receives clients’ requests for sending feedback signals to Dialogflow. Every request should have a valid JWT as its header, or connector servers would reject it.
-4. (Optional) Conversation Integration Key APIs: It receives clients' requests for creating, reading, and deleting conversationIntegrationKey:conversationName key value pairs in Redis. This gives telephony platforms an alternative way to communicate a Dialogflow conversation id to the front end.
 
+UI Connector serves external requests via four API modules:
+
+*   **JWT Registration API:** It expects HTTP requests with valid customized tokens and returns a newly-generated JWT with a 1-hour lifetime to the client. The API will not work until the customized rule to authenticate agent clients is implemented. The encoding algorithm must be the same as the one used in the decoding (currently ‘HS256’).
+*   **SocketIO APIs:** They handle WebSockets connections between clients and servers, including establishing connections and sending Dialogflow events to associated clients.
+*   **Dialogflow Proxy APIs:** It receives clients’ requests for sending feedback signals to Dialogflow. Every request should have a valid JWT as its header, or connector servers will reject it.
+*   **(Optional) Conversation Integration Key APIs:** It receives clients' requests for creating, reading, and deleting `conversationIntegrationKey:conversationName` key-value pairs in Redis. This gives telephony platforms an alternative way to communicate a Dialogflow conversation ID to the front end.
 
 ### JWT Registration API
 
---------------------------------------------------------------------------------
+<details>
+<summary><code>POST</code> <code><b>/register</b></code></summary>
 
-<details open>
-  <summary><code>POST</code> <code><b>/register</b></code> Registers a JWT with the UI Connector.</summary>
+Registers a JWT with the UI Connector.
 
 #### Request Headers
 
 The token will depend on the value of `AUTH_OPTION` in `config.py`.
 
-> | name              | value               |
-> |-------------------|---------------------|
-> | Authorization     | `{CustomizedToken}` |
+| Name          | Value               |
+| :------------ | :------------------ |
+| Authorization | `{CustomizedToken}` |
 
 #### Request Body
 
-> | content-type       | body                                                |
-> |--------------------|-----------------------------------------------------|
-> | `application/json` | empty, or `{"gcp_agent_assist_user": "<UserName>"}` |
+| Content-Type     | Body                                                |
+| :--------------- | :-------------------------------------------------- |
+| `application/json` | empty, or `{"gcp_agent_assist_user": "<UserName>"}` |
 
 #### Responses
 
-If successful, the response body contains generated JWT in JSON format.
+If successful, the response body contains the generated JWT in JSON format.
 
-> | http code     | content-type                      | response                                                 |
-> |---------------|-----------------------------------|----------------------------------------------------------|
-> | `200`         | `application/json`                | `{"token":"<jwt-header>.<jwt-payload>.<jwt-signature>"}` |
-> | `401`         | `text/raw`                        | `Unauthorized: <corresponding error message>`            |
+| HTTP Code | Content-Type     | Response                                                 |
+| :-------- | :--------------- | :------------------------------------------------------- |
+| `200`     | `application/json` | `{"token":"<jwt-header>.<jwt-payload>.<jwt-signature>"}` |
+| `401`     | `text/plain`     | `Unauthorized: <corresponding error message>`            |
 
 </details>
 
---------------------------------------------------------------------------------
-
 ### SocketIO APIs
+
 This API group handles WebSockets connections between clients and servers, including establishing connections and sending Dialogflow events to associated clients. The connection request should be authorized with a valid JWT.
+
 Every WebSockets API is a socketio event. The following shows event names and expected messages in the format `EVENT_NAME(EXPECTED_MESSAGE)`.
+
 ```python
 # Events emitted by clients
 connect({'token': generated_JWT}) # Receives connection requests from clients and expects clients to provide valid JWT for authorization. It emits an 'unauthenticated' event if no valid token is received.
@@ -289,10 +283,11 @@ new-recognition-result-notification-event({
 ```
 
 ### Dialogflow Proxy APIs
+
 These APIs handle client requests about sending feedback signals to Dialogflow.
 
 | Dialogflow Proxy API | Dialogflow API |
-| -------------- | -------------- |
+| :--- | :--- |
 | `PATCH` **`/<version>/projects/<project>/locations/<location>/answerRecords/<path>`** | [projects.locations.answerRecords.patch](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.answerRecords/patch)|
 | `GET` **`/<version>/projects/<project>/locations/<location>/conversations/<path>`** | [projects.locations.conversations.get](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.conversations/get), [projects.locations.conversations.messages.list](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.conversations.messages/list), [projects.locations.conversations.participants.get](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants/get), [projects.locations.conversations.participants.list](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants/list) |
 | `POST` **`/<version>/projects/<project>/locations/<location>/conversations/<path>`** | [projects.locations.conversations.complete](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations/complete), [projects.locations.conversations.create](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations/create), [projects.locations.conversations.messages.batchCreate](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.messages/batchCreate), [projects.locations.conversations.participants.analyzeContent](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants/analyzeContent), [projects.locations.conversations.participants.create](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants/create), [projects.locations.conversations.participants.suggestions.suggestArticles](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants.suggestions/suggestArticles), [projects.locations.conversations.participants.suggestions.suggestFaqAnswers](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants.suggestions/suggestFaqAnswers), [projects.locations.conversations.participants.suggestions.suggestSmartReplies](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/projects.locations.conversations.participants.suggestions/suggestSmartReplies)|
@@ -306,111 +301,107 @@ These APIs handle client requests about sending feedback signals to Dialogflow.
 
 #### Request Headers
 
-> | name              | value        |
-> |-------------------|--------------|
-> | Authorization     | `{ValidJWT}` |
+| Name          | Value        |
+| :------------ | :----------- |
+| Authorization | `{ValidJWT}` |
 
 #### Request Body
 
-> | method | content-type       | body                                        |
-> |--------|--------------------|---------------------------------------------|
-> | GET    |                    |                                             |
-> | POST   | `application/json` | JSON data expected to be sent to Dialogflow |
-> | PATCH  | `application/json` | JSON data expected to be sent to Dialogflow |
+| Method | Content-Type     | Body                                        |
+| :----- | :--------------- | :------------------------------------------ |
+| `GET`  |                  |                                             |
+| `POST` | `application/json` | JSON data expected to be sent to Dialogflow |
+| `PATCH`| `application/json` | JSON data expected to be sent to Dialogflow |
 
 #### Responses
 
-> | http code     | content-type                      | response                                                                                                             |
-> |---------------|-----------------------------------|----------------------------------------------------------------------------------------------------------------------|
-> | `200`         | Original Content-Type             | The original response from Dialogflow will be processed and returned, including raw content, status code and headers |
-> | `400`         | `text/plain`                      | `Token is missing` or `Token is invalid`                                                                             |
+| HTTP Code | Content-Type            | Response                                                                                                             |
+| :-------- | :---------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| `200`     | Original Content-Type   | The original response from Dialogflow will be processed and returned, including raw content, status code and headers |
+| `400`     | `text/plain`            | `Token is missing` or `Token is invalid`                                                                             |
 
---------------------------------------------------------------------------------
+### (Optional) Conversation Integration Key APIs
 
-### Conversation Integration Key APIs
+The Conversation Integration Key APIs receive clients' requests for creating, reading, and deleting `conversationIntegrationKey:conversationName` key-value pairs in Redis.
 
-The Conversation Integration Key APIs receive clients' requests for creating, reading, and deleting conversationIntegrationKey and conversationName key value pairs in Redis.
+<details>
+<summary><code>POST</code> <code><b>/conversation-name</b></code></summary>
 
---------------------------------------------------------------------------------
-
-<details open>
-  <summary><code>POST</code> <code><b>/conversation-name</b></code> Sets a key/value pair in Redis for a conversation.</summary>
+Sets a key/value pair in Redis for a conversation.
 
 #### Request Headers
 
-> | name              | value        |
-> |-------------------|--------------|
-> | Authorization     | `{ValidJWT}` |
+| Name          | Value        |
+| :------------ | :----------- |
+| Authorization | `{ValidJWT}` |
 
 #### Request Body
 
-> | content-type       | body                                                                                                                                                        |
-> |--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-> | `application/json` | `{"conversationIntegrationKey":"<conversationIntegrationKey>","conversationName":"projects/<project>/locations/<location>/conversations/<conversationId>"}` |
+| Content-Type     | Body                                                                                                                                                        |
+| :--------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `application/json` | `{"conversationIntegrationKey":"<conversationIntegrationKey>","conversationName":"projects/<project>/locations/<location>/conversations/<conversationId>"}` |
 
 #### Responses
 
-> | http code     | content-type                      | response                                                                                                    |
-> |---------------|-----------------------------------|-------------------------------------------------------------------------------------------------------------|
-> | `200`         | `application/json`                | `{"<conversationIntegrationKey>":"projects/<project>/locations/<location>/conversations/<conversationId>"}` |
-> | `400`         | `text/plain`                      | `Bad request`                                                                                               |
+| HTTP Code | Content-Type     | Response                                                                                                    |
+| :-------- | :--------------- | :---------------------------------------------------------------------------------------------------------- |
+| `200`     | `application/json` | `{"<conversationIntegrationKey>":"projects/<project>/locations/<location>/conversations/<conversationId>"}` |
+| `400`     | `text/plain`     | `Bad request`                                                                                               |
 
 </details>
 
---------------------------------------------------------------------------------
+<details>
+<summary><code>GET</code> <code><b>/conversation-name</b></code></summary>
 
-<details open>
-  <summary><code>GET</code> <code><b>/conversation-name</b></code> Gets a conversation name from Redis using an integration key.</summary>
+Gets a conversation name from Redis using an integration key.
 
 #### Request Headers
 
-> | name              | value        |
-> |-------------------|--------------|
-> | Authorization     | `{ValidJWT}` |
+| Name          | Value        |
+| :------------ | :----------- |
+| Authorization | `{ValidJWT}` |
 
 #### Query Parameters
 
-> | name      |  type     | data type              | description                                      |
-> |-----------|-----------|------------------------|--------------------------------------------------|
-> | conversationIntegrationKey | required | string | id known to telephony platform and agent desktop |
+| Name                       | Type     | Data Type | Description                                      |
+| :------------------------- | :------- | :-------- | :----------------------------------------------- |
+| `conversationIntegrationKey` | required | string    | ID known to telephony platform and agent desktop |
 
 #### Responses
 
-> | http code     | content-type       | response                                                                                        |
-> |---------------|--------------------|-------------------------------------------------------------------------------------------------|
-> | `200`         | `application/json` | `{"conversationName":"projects/<project>/locations/<location>/conversations/<conversationId>"}` |
-> | `400`         | `text/plain`       | `Bad request`                                                                                   |
+| HTTP Code | Content-Type     | Response                                                                                        |
+| :-------- | :--------------- | :---------------------------------------------------------------------------------------------- |
+| `200`     | `application/json` | `{"conversationName":"projects/<project>/locations/<location>/conversations/<conversationId>"}` |
+| `400`     | `text/plain`     | `Bad request`                                                                                   |
 
 </details>
 
---------------------------------------------------------------------------------
+<details>
+<summary><code>DELETE</code> <code><b>/conversation-name</b></code></summary>
 
-<details open>
-  <summary><code>DELETE</code> <code><b>/conversation-name</b></code> Deletes a conversation name from Redis using an integration key.</summary>
+Deletes a conversation name from Redis using an integration key.
 
 #### Request Headers
 
-> | name              | value        |
-> |-------------------|--------------|
-> | Authorization     | `{ValidJWT}` |
+| Name          | Value        |
+| :------------ | :----------- |
+| Authorization | `{ValidJWT}` |
 
 #### Query Parameters
 
-> | name                       |  type    | data type | description                                      |
-> |----------------------------|----------|-----------|--------------------------------------------------|
-> | conversationIntegrationKey | required | string    | id known to telephony platform and agent desktop |
+| Name                       | Type     | Data Type | Description                                      |
+| :------------------------- | :------- | :-------- | :----------------------------------------------- |
+| `conversationIntegrationKey` | required | string    | ID known to telephony platform and agent desktop |
 
 #### Responses
 
-> | http code     | content-type                      | response      |
-> |---------------|-----------------------------------|---------------|
-> | `200`         | `text/plain`                      | `Success`     |
-> | `400`         | `text/plain`                      | `Bad request` |
-> | `404`         | `text/plain`                      | `Not found`   |
+| HTTP Code | Content-Type | Response      |
+| :-------- | :----------- | :------------ |
+| `200`     | `text/plain` | `Success`     |
+| `400`     | `text/plain` | `Bad request` |
+| `404`     | `text/plain` | `Not found`   |
 
 </details>
-
---------------------------------------------------------------------------------
 
 # Automated Deployment
 The deployment can be automated by a gcloud automation script or terraform.
