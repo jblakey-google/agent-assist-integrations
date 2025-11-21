@@ -1,3 +1,5 @@
+.sfdx
 *.code-workspace
-.env
-.env.*
+.vscode
+twilioflex/**/.env.*
+commit.txt
