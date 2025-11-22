@@ -17,11 +17,13 @@ import json
 import gzip
 from unittest.mock import patch, call
 
-import main
-from main import socketio
-from main import app
-from main import dialogflow
-from main import redis_pubsub_handler
+with patch('google.auth.default', return_value=(None, None)), \
+     patch('redis.Redis'):
+    import main
+    from main import socketio
+    from main import app
+    from main import dialogflow
+    from main import redis_pubsub_handler
 
 _SERVER_ID = 'fake_server_id'
 _PROJECT_ID = 'fake_project_id'

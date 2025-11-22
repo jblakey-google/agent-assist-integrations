@@ -312,6 +312,43 @@ addAgentAssistEventListener('smart-reply-chip-selected', (event) => {
 
 <br>
 
+## Testing
+
+This repository contains a comprehensive test suite that covers all the different integrations. The tests are run automatically before each commit using a pre-commit hook.
+
+### Running the tests manually
+
+To run all the tests manually, execute the following script from the root of the repository:
+
+```bash
+./test/run-all-tests.sh
+```
+
+This script will:
+
+1.  Run all the JavaScript and Python tests.
+2.  Start and stop a Redis server for the Python integration tests.
+
+### Pre-commit Hook
+
+This repository uses the `pre-commit` framework to run all tests before each commit. To enable this hook, you must have the `pre-commit` package installed (`pip install pre-commit`) and then run the following command from the root of the repository:
+
+```bash
+pre-commit install
+```
+
+This will install the pre-commit hook, which will automatically run the `./test/run-all-tests.sh` script before each commit.
+
+### One-Time Setup
+
+Before running the tests for the first time, you will need to install all the necessary dependencies. You can do this by running the following script from the root of the repository:
+
+```bash
+./test/setup.sh
+```
+
+<br>
+
 ## Implementation Details
 
 ### Communication

@@ -18,8 +18,9 @@ import base64
 from unittest.mock import Mock, patch
 import datetime
 
-import main
-from main import app
+with patch('redis.Redis') as mock_redis:
+    import main
+    from main import app
 
 SERVER_ID = 'SERVER_001'
 CONVERSATION_ID = 'fake-conversation-001'

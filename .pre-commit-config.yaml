@@ -1,0 +1,8 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: run-all-tests
+        name: Run all tests
+        entry: ./test/run-all-tests.sh
+        language: script
+        stages: [commit]
