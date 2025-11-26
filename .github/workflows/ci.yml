@@ -42,3 +42,18 @@ jobs:
       - name: Run Jest tests
         run: npm test
         working-directory: salesforce/aa-lwc
+  twilio-jest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+        working-directory: twilioflex/flex-template-agent-assist
+      - name: Run Jest tests
+        run: npm test
+        working-directory: twilioflex/flex-template-agent-assist
