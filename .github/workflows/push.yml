@@ -1,0 +1,12 @@
+name: On Push Workflow
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Greet on Push
+        run: echo "Hello, GitHub Actions! This workflow runs on every push."
