@@ -1,6 +1,6 @@
-name: On Push Workflow
+name: CI Workflow
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
