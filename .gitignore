@@ -1,3 +1,155 @@
-*.code-workspace
+# IDE & VIRTUAL ENVIRONMENT
+.vscode
+venv
+.idea
+
+# ENVIRONMENT VARIABLES
 .env
 .env.*
+!.env.example
+!*.env.sample
+
+# COMMIT MESSAGE FILE
+commit.txt
+
+# PARTIAL DEPLOYMENT SCRIPTS
+aa-integration-backend/deploy-*.sh
+
+# LOGS
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# RUNTIME DATA
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# DEPENDENCY DIRECTORIES
+node_modules/
+bower_components
+jspm_packages/
+lib-cov
+coverage
+*.lcov
+.nyc_output
+
+# BUILD & COMPILED FILES
+build/Release
+build/
+dist
+.grunt
+.lock-wscript
+typings/
+*.tsbuildinfo
+.npm
+.eslintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.node_repl_history
+*.tgz
+.yarn-integrity
+.cache
+.next
+.nuxt
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+keytmp.pem
+key.pem
+cert.pem
+dist/**/*
+*.code-workspace
+
+# SALESFORCE
+salesforce/aa-lwc/.sf
+salesforce/aa-lwc/.sfdx
+salesforce/aa-lwc/.localdevserver
+salesforce/aa-lwc/force-app/main/default/staticresources/*
+!salesforce/aa-lwc/force-app/main/default/staticresources/global_styles.resource-meta.xml
+!salesforce/aa-lwc/force-app/main/default/staticresources/global_styles.css
+!salesforce/aa-lwc/force-app/main/default/staticresources/google_logo.resource-meta.xml
+!salesforce/aa-lwc/force-app/main/default/staticresources/google_logo.svg
+
+# TWILIO
+twilioflex/flex-config/*.env
+twilioflex/flex-config/*.log
+twilioflex/flex-config/ui_attributes.local.json
+twilioflex/flex-config/ui_attributes.my_hosted_flex.json
+twilioflex/pluginsService.js
+twilioflex/.twilio-functions
+twilioflex/.twiliodeployinfo
+twilioflex/appConfig.js
+twilioflex/serverless-functions/src/assets/features/chat-to-video-escalation
+
+# TERRAFORM
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!example.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.tfplan
+.terraformrc
+terraform.rc
+
+# LINUX
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# MACOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# WINDOWS
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# JEST
+test-results/
+
+# NOVA
+.nova
+eslint_report.json
