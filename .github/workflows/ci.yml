@@ -1,0 +1,49 @@
+name: CI Workflow
+
+on: [pull_request]
+
+jobs:
+  salesforce-jest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: salesforce/aa-lwc/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('salesforce/aa-lwc/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm install
+        working-directory: salesforce/aa-lwc
+      - name: Run Jest tests
+        run: npm test -- --verbose
+        working-directory: salesforce/aa-lwc
+  twilio-jest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: twilioflex/flex-template-agent-assist/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('twilioflex/flex-template-agent-assist/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm install
+        working-directory: twilioflex/flex-template-agent-assist
+      - name: Run Jest tests
+        run: npm test -- --verbose
+        working-directory: twilioflex/flex-template-agent-assist
