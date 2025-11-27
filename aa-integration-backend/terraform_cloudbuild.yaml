@@ -50,7 +50,7 @@ steps:
       terraform init \
         -backend-config="bucket=$tf_state_bucket" \
         -backend-config="prefix=$BRANCH_NAME" || exit 1
-      cd ../../
+      cd ../..
 
 - id: 'tf plan'
   name: 'hashicorp/terraform:1.0.0'
@@ -67,7 +67,7 @@ steps:
         -var="connector_service_name=ui-connector-$BRANCH_NAME" \
         -var="interceptor_service_name=cloud-pubsub-interceptor-$BRANCH_NAME" \
         || exit 1
-      cd ../../
+      cd ../..
 
 - id: 'tf apply'
   name: 'hashicorp/terraform:1.0.0'
@@ -94,4 +94,4 @@ steps:
         -var="conversation_lifecycle_notifications_subscription_id=aa-conversation-event-sub-$BRANCH_NAME" \
         -var="new_recognition_result_notification_subscription_id=aa-intermediate-transcript-event-sub-$BRANCH_NAME" \
         -var="auth_option=$auth_option"
-      cd ../../
+      cd ../..

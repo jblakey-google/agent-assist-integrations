@@ -641,4 +641,3 @@ interface UiModuleContainerConfig {
   knowledgeAssistConfig?: KnowledgeAssistConfig;
 }
 ```
-<!-- This is a test comment for the pull request workflow. -->
