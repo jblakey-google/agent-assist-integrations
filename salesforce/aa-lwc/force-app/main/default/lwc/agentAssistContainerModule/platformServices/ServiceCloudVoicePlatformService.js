@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import TwilioFlexPlatformService from './TwilioFlexPlatformService';
+
 import scvEventNames from "../data/scvEventNames";
-import BasePlatformService from "./BasePlatformService";
 const SCV_EVENTS_TO_SUBSCRIBE = [
   scvEventNames.callconnected,
   scvEventNames.callended
@@ -25,10 +26,10 @@ const SCV_EVENTS_TO_SUBSCRIBE = [
 const CONFIG = {
   // For this.platform = "servicecloudvoice-nice", the Nice Business Unit Number
   // https://help.nicecxone.com/content/acd/businessunits/managebusinessunit.htm
-  niceBusNo: 1234567 // TODO: make sure this matches your Nice CXone Business Unit Number.
+  niceBusNo: 4610247 // TODO: make sure this matches your Nice CXone Business Unit Number.
 };
 
-export default class ServiceCloudVoicePlatformService extends BasePlatformService {
+export default class ServiceCloudVoicePlatformService extends TwilioFlexPlatformService {
   constructor(lwc, refs) {
     super(lwc, refs);
     this.telephonyEventListener = this.onTelephonyEvent.bind(this);
