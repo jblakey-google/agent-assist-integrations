@@ -1,0 +1,13 @@
+{
+  "orgName": "DevHub",
+  "edition": "Developer",
+  "features": ["ServiceUser", "ServiceCloud", "LightningServiceConsole"],
+  "settings": {
+      "communitiesSettings": {
+          "enableNetworksEnabled": true
+      },
+      "omniChannelSettings": {
+          "enableOmniChannel": true
+      }
+  }
+}
