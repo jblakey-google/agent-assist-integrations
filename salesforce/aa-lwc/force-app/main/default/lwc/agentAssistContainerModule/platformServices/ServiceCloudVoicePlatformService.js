@@ -26,7 +26,7 @@ const SCV_EVENTS_TO_SUBSCRIBE = [
 const CONFIG = {
   // For this.platform = "servicecloudvoice-nice", the Nice Business Unit Number
   // https://help.nicecxone.com/content/acd/businessunits/managebusinessunit.htm
-  niceBusNo: 4610247 // TODO: make sure this matches your Nice CXone Business Unit Number.
+  niceBusNo: 1234567 // TODO: make sure this matches your Nice CXone Business Unit Number.
 };
 
 export default class ServiceCloudVoicePlatformService extends TwilioFlexPlatformService {
