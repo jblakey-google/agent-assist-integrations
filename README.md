@@ -3,7 +3,7 @@
 ## Introduction
 
 The Agent Assist modules are a set of pre-built, customizable UI components that can be embedded in any web application to surface [Google Agent Assist](https://cloud.google.com/agent-assist) suggestions. These are made available as a set of JavaScript Web Components and services hosted on Google's GStatic domain.
-In addition to the components themselves, a set of reference implementations will also be provided that will demonstrate how the modules can be integrated into select agent desktop platforms. 
+In addition to the components themselves, a set of reference implementations will also be provided that will demonstrate how the modules can be integrated into select agent desktop platforms.
 
 <br>
 
@@ -15,29 +15,30 @@ This product is covered by the [Pre-GA Offerings Terms](https://cloud.google.com
 
 ## Related documentation and support
 
- - For help with uploading conversation data, training Agent Assist models, or configuring your conversation profile, please refer to the [Agent Assist documentation](https://cloud.google.com/agent-assist/docs).
+- For help with uploading conversation data, training Agent Assist models, or configuring your conversation profile, please refer to the [Agent Assist documentation](https://cloud.google.com/agent-assist/docs).
 
- - For help with integrating the Agent Assist Modules into your application, please reach out to agent-assist-ui-modules-support@google.com.
+- For help with integrating the Agent Assist Modules into your application, please reach out to <agent-assist-ui-modules-support@google.com>.
 
 <br>
 
 ## High-level approach
 
-There are two primary approaches for integrating the Agent Assist modules into your application - the managed container approach, or as individually imported components. 
+There are two primary approaches for integrating the Agent Assist modules into your application - the managed container approach, or as individually imported components.
 
 <br>
 
 ## Managed container
 
-In the managed container approach, we will provide a single component that renders the desired Agent Assist features in a unified panel. This panel will also handle all shared module concerns, including the loading of connectors and any error messaging. This is the approach we recommend if integrating the modules into a third-party agent desktop such as LivePerson or Genesys Cloud, or when minimal to no customization is required. 
+In the managed container approach, we will provide a single component that renders the desired Agent Assist features in a unified panel. This panel will also handle all shared module concerns, including the loading of connectors and any error messaging. This is the approach we recommend if integrating the modules into a third-party agent desktop such as LivePerson or Genesys Cloud, or when minimal to no customization is required.
 
-After the container component is initialized, it will load all necessary dependencies. Only a single script should need to be imported in this case, no matter how many Agent Assist features are used. 
+After the container component is initialized, it will load all necessary dependencies. Only a single script should need to be imported in this case, no matter how many Agent Assist features are used.
 
 ```
 <script src="https://www.gstatic.com/agent-assist-ui-modules/container.js"></script>
 ```
 
 Element tag name:
+
 ```
 <agent-assist-ui-modules-container>
 ```
@@ -80,6 +81,7 @@ Example:
 Unlike attributes, inputs cannot be included in an HTML tag directly. Instead, they must be assigned to the JavaScript reference of the web component.
 
 Example:
+
 ```
 const container = document.querySelector('agent-assist-ui-modules-container');
 container.input = someValue;
@@ -580,6 +582,7 @@ See private API documentation.
 See [API documentation](https://cloud.google.com/dialogflow/es/docs/reference/rest/v2beta1/SuggestSmartRepliesResponse#SmartReplyAnswer).
 
 #### <b>SmartReplySelection</b>
+
 ```
 /** Details regarding an Agent Assist Smart Reply selection. */
 interface SuggestionFeatureSelection {
