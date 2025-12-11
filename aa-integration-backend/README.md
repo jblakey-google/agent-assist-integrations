@@ -601,6 +601,7 @@ $ gcloud run deploy $CONNECTOR_IMAGE_NAME \
 --subnet $VPC_SUBNET \
 --clear-vpc-connector \
 --min-instances=1 \
+--no-cpu-throttling \
 --set-env-vars REDISHOST=$REDIS_HOST,REDISPORT=$REDIS_PORT,GCP_PROJECT_ID=$GCP_PROJECT_ID,AUTH_OPTION=$AUTH_OPTION \
 --update-secrets=/secret/jwt_secret_key=${JWT_SECRET_NAME}:latest
 # Option 2: Use a created Serverless VPC Access connector for Redis connection.
@@ -614,6 +615,7 @@ $ gcloud run deploy $CONNECTOR_IMAGE_NAME \
 --vpc-connector $VPC_CONNECTOR_NAME \
 --clear-network \
 --min-instances=1 \
+--no-cpu-throttling \
 --set-env-vars REDISHOST=$REDIS_HOST,REDISPORT=$REDIS_PORT,GCP_PROJECT_ID=$GCP_PROJECT_ID,AUTH_OPTION=$AUTH_OPTION \
 --update-secrets=/secret/jwt_secret_key=${JWT_SECRET_NAME}:latest
 ```
@@ -638,6 +640,7 @@ $ gcloud run deploy $INTERCEPTOR_SERVICE_NAME \
 --clear-vpc-connector \
 --ingress=internal \
 --min-instances=1 \
+--no-cpu-throttling \
 # You can also add LOGGING_FILE here to specify the logging file path on Cloud Run.
 --set-env-vars REDISHOST=$REDIS_HOST,REDISPORT=$REDIS_PORT
 # Option 2: Use a created Serverless VPC Access connector for Redis connection.

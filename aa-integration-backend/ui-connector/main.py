@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,11 +54,6 @@ def redis_pubsub_handler(message):
 def psubscribe_exception_handler(ex, pubsub, thread):
     logging.exception('An error occurred while getting pubsub messages: {}'.format(ex))
     time.sleep(2)
-
-def psubscribe_exception_handler(ex, pubsub, thread):
-    logging.exception('An error occurred while getting pubsub messages: {}'.format(ex))
-    time.sleep(2)
-
 
 SERVER_ID = '{}-{}'.format(random.uniform(0, 322321),
                            datetime.now().timestamp())
@@ -119,6 +114,7 @@ def register_app_token():
     token = generate_jwt(request.get_json(force=True, silent=True))
     return jsonify({'token': token})
 
+
 def call_dialogflow(version, project, location, tail):
     """Forwards valid request to dialogflow and return its responese."""
     logging.info(
@@ -145,7 +141,6 @@ def call_dialogflow(version, project, location, tail):
         logging.info('patch_dialogflow response: {0}, {1}, {2}'.format(
             response.raw.data, response.status_code, response.headers))
         return response.raw.data, response.status_code, response.headers.items()
-
 
 # projects.locations.conversations.create
 @app.route('/<version>/projects/<project>/locations/<location>/conversations', methods=['POST'])
@@ -187,6 +182,7 @@ def call_dialogflow_without_tail(version, project, location):
 @token_required
 def call_dialogflow_with_tail(version, project, location, tail):
     return call_dialogflow(version, project, location, tail)
+
 
 @app.route('/conversation-name', methods=['POST'])
 @token_required
