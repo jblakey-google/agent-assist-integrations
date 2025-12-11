@@ -1,29 +1,18 @@
-# copy.bara.sky
+# See Makefile for regular usage instructions. 
 
 # Download Copybara .jar file from
 # https://github.com/google/copybara/releases
 
-# Set this in your shell profile (e.g. .bashrc)
-# echo "COPYBARA_DEPLOY_JAR=${HOME}/tools/copybara_deploy.jar" >> ~/.bashrc
-
-# Run workflows locally (initial, dry run)
-# java -jar $COPYBARA_DEPLOY_JAR copy.bara.sky backend_sync --init-history --force --dry-run
-# java -jar $COPYBARA_DEPLOY_JAR copy.bara.sky frontend_sync --init-history --force --dry-run
-
-# Run workflows locally (initial run)
-# java -jar $COPYBARA_DEPLOY_JAR copy.bara.sky backend_sync --init-history --force
-# java -jar $COPYBARA_DEPLOY_JAR copy.bara.sky frontend_sync --init-history --force
-
-# Run workflows locally (subsequent runs, these could be automated)
-# java -jar $COPYBARA_DEPLOY_JAR copy.bara.sky backend_sync
-# java -jar $COPYBARA_DEPLOY_JAR copy.bara.sky frontend_sync
+# For initial migration, use this command (test with --dry-run first):
+# java -jar $COPYBARA_DEPLOY_JAR migrate copy.bara.sky backend_sync --init-history --force --dry-run --last-rev <commit-sha>
+# java -jar $COPYBARA_DEPLOY_JAR migrate copy.bara.sky frontend_sync --init-history --force --dry-run --last-rev <commit-sha>
 
 # -----------------------------------------------------------------------------
 # VARIABLES
 # -----------------------------------------------------------------------------
 FE_REPO_URL = "https://partner-code.googlesource.com/agent-assist-ui-modules"
 BE_REPO_URL = "https://partner-code.googlesource.com/aa-integration-backend"
-GITHUB_URL  = "https://github.com/GoogleCloudPlatform/agent-assist-integrations"
+GITHUB_URL  = "https://github.com/GoogleCloudPlatform/agent-assist-integrations/"
 
 # -----------------------------------------------------------------------------
 # WORKFLOW 1: Frontend (Root to Root)
