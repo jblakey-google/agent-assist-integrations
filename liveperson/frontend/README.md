@@ -72,7 +72,7 @@ Follow the steps below to create a Service Account and set up the integration.
 
 1. Select the project associated with your Agent Assist resources.
 2. Click on the navigation menu in the GCP console, hover over "IAM & admin", and click "Service accounts".
-3. Click on "+ CREATE SERVICE ACCOUNT", fill in the details, and give it the "Dialogflow Agent Assist Client" role.
+3. Click on "+ CREATE SERVICE ACCOUNT", fill in the details, and give it the "Dialogflow Client API" role.
 
 ### Enable APIs
 

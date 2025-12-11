@@ -3,3 +3,4 @@
 .vscode
 twilioflex/**/.env.*
 commit.txt
+.DS_Store
