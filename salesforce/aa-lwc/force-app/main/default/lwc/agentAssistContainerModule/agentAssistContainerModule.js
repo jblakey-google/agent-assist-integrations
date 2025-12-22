@@ -196,7 +196,7 @@ export default class AgentAssistContainerModule extends LightningElement {
           }
           resolve();
         }
-      }, 100);
+      }, 500);
     });
   }
 
