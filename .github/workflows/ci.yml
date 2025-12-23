@@ -1,0 +1,113 @@
+name: CI Workflow
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  salesforce-jest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Cache Node.js modules
+        uses: actions/cache@v5
+        with:
+          path: salesforce/aa-lwc/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('salesforce/aa-lwc/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm install
+        working-directory: salesforce/aa-lwc
+      - name: Run Jest tests
+        run: npm test -- --verbose
+        working-directory: salesforce/aa-lwc
+        
+  twilio-jest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Cache Node.js modules
+        uses: actions/cache@v5
+        with:
+          path: twilioflex/flex-template-agent-assist/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('twilioflex/flex-template-agent-assist/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm install
+        working-directory: twilioflex/flex-template-agent-assist
+      - name: Run Jest tests
+        run: npm test -- --verbose
+        working-directory: twilioflex/flex-template-agent-assist
+
+  backend-ui-connector-tests:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+        working-directory: aa-integration-backend/ui-connector
+      - name: Run unit tests
+        run: |
+          # Use /tmp for logging to avoid permission issues
+          export LOGGING_FILE=/tmp/test.log
+          export GCP_PROJECT_ID=dummy-project
+          python unit_test.py
+        working-directory: aa-integration-backend/ui-connector
+
+  backend-interceptor-tests:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+        working-directory: aa-integration-backend/cloud-pubsub-interceptor
+      - name: Run unit tests
+        run: |
+          # Use /tmp for logging to avoid permission issues
+          export LOGGING_FILE=/tmp/test.log
+          python unit_test.py
+        working-directory: aa-integration-backend/cloud-pubsub-interceptor

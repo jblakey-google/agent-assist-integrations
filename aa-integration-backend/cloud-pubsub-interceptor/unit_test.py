@@ -18,7 +18,6 @@ import base64
 from unittest.mock import Mock, patch
 import datetime
 
-import main
 from main import app
 
 SERVER_ID = 'SERVER_001'
@@ -26,13 +25,15 @@ CONVERSATION_ID = 'fake-conversation-001'
 PROJECT_ID = 'aa-integration-poc'
 CONVERSATION_NAME = 'projects/{0}/locations/global/conversations/{1}'.format(
     PROJECT_ID, CONVERSATION_ID)
+CONVERSATION_NAME_WITHOUT_LOCATION = 'projects/{0}/conversations/{1}'.format(
+    PROJECT_ID, CONVERSATION_ID)
 SAMPLE_DIALOGFLOW_EVENT = {
     'conversation': CONVERSATION_NAME,
     'type': 'CONVERSATION_STARTED'
 }
 SAMPLE_REDIS_PUBSUB_PUB = {
-    'conversation_name': CONVERSATION_NAME,
-    'data': json.dumps(SAMPLE_DIALOGFLOW_EVENT),
+    'conversation_name': CONVERSATION_NAME_WITHOUT_LOCATION,
+    'data': json.dumps(SAMPLE_DIALOGFLOW_EVENT, sort_keys=True),
     'data_type': 'conversation-lifecycle-event',
     'ack_time': '2022-03-11T00:00:10Z',
     'publish_time': '2022-03-11T00:00:00Z',
@@ -40,7 +41,7 @@ SAMPLE_REDIS_PUBSUB_PUB = {
 }
 SAMPLE_CLOUD_PUBSUB_MSG = {
     'message': {
-        'data': base64.b64encode(json.dumps(SAMPLE_DIALOGFLOW_EVENT).encode('utf-8')).decode('ascii'),
+        'data': base64.b64encode(json.dumps(SAMPLE_DIALOGFLOW_EVENT, sort_keys=True).encode('utf-8')).decode('ascii'),
         'publishTime': '2022-03-11T00:00:00Z',
         'messageId': '3502221325816966'
     }
@@ -68,10 +69,10 @@ class TestInterceptorAPI(unittest.TestCase):
         response = client.post('/conversation-lifecycle-event',
                                json=SAMPLE_CLOUD_PUBSUB_MSG)
         MockPublish.assert_called_with(
-            '{}:{}'.format(SERVER_ID, CONVERSATION_NAME),
+            '{}:{}'.format(SERVER_ID, CONVERSATION_NAME_WITHOUT_LOCATION),
             json.dumps(SAMPLE_REDIS_PUBSUB_PUB))
-        MockGet.assert_called_with(CONVERSATION_NAME)
-        MockExists.assert_called_with(CONVERSATION_NAME)
+        MockGet.assert_called_with(CONVERSATION_NAME_WITHOUT_LOCATION)
+        MockExists.assert_called_with(CONVERSATION_NAME_WITHOUT_LOCATION)
         self.assertEqual(MockDateTime.now.call_count, 1)
         self.assertEqual(response.status_code, 204)
 

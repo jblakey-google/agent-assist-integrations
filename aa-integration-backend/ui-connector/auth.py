@@ -19,12 +19,14 @@ import requests
 from flask import request, jsonify
 from functools import wraps
 
-import config, auth_options
+import config
+import auth_options
 
 jwt_secret_key = ''  # To be loaded from config.JWT_SECRET_KEY_PATH
 
 
 def load_jwt_secret_key():
+    global jwt_secret_key
     with open(config.JWT_SECRET_KEY_PATH, 'r') as key_file:
         jwt_secret_key = key_file.read()
 
@@ -59,7 +61,7 @@ def check_jwt(token):
         if data['exp'] < datetime.datetime.now().timestamp():
             return False, 'Your token has expired.'
         return True, 'Your token is valid.'
-    except:
+    except Exception:
         return False, 'Failed to parse your token.'
 
 

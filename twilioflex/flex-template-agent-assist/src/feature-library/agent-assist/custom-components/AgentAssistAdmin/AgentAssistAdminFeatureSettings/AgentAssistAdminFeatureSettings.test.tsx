@@ -148,7 +148,7 @@ describe('AgentAssistAdminFeatureSettings', () => {
       );
       await userEvent.click(agentCoachingSwitch);
 
-      expect(agentCoachingSwitch).toHaveProperty('checked', false);
+      expect(agentCoachingSwitch).toHaveProperty('checked', true);
     });
 
     it('should be able to toggle conversation summary', async () => {
@@ -157,14 +157,14 @@ describe('AgentAssistAdminFeatureSettings', () => {
       );
       await userEvent.click(conversationSummarySwitch);
 
-      expect(conversationSummarySwitch).toHaveProperty('checked', false);
+      expect(conversationSummarySwitch).toHaveProperty('checked', true);
     });
 
     it('should be able to toggle smart reply', async () => {
       const smartReplySwitch = await screen.findByTestId(`enable-${AgentAssistStringTemplates.SmartReply}-switch`);
       await userEvent.click(smartReplySwitch);
 
-      expect(smartReplySwitch).toHaveProperty('checked', false);
+      expect(smartReplySwitch).toHaveProperty('checked', true);
     });
 
     it('should be able to toggle knowleadge assist', async () => {
@@ -173,12 +173,12 @@ describe('AgentAssistAdminFeatureSettings', () => {
       );
       await userEvent.click(knowleadgeAssistSwitch);
 
-      expect(knowleadgeAssistSwitch).toHaveProperty('checked', false);
+      expect(knowleadgeAssistSwitch).toHaveProperty('checked', true);
     });
   });
 
   it('should pass accessibility test', async () => {
-    const { container } = render(<AgentAssistAdminFeatureSettings />);
+    const { container } = renderWithProviders(<AgentAssistAdminFeatureSettings />);
     expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -22,7 +22,7 @@ import hashlib
 
 from flask import Flask, request, make_response, jsonify, render_template
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit, join_room, leave_room, rooms
+from flask_socketio import SocketIO, join_room, leave_room, rooms
 from socketio.exceptions import ConnectionRefusedError
 import redis
 import time

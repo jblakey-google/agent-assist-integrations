@@ -23,7 +23,8 @@ from flask import Flask, request
 
 # Cloud run could recognize logging files under '/var/log/' folder
 # Comment this line for local test
-logging.basicConfig(filename='/var/log/test.log', level=logging.INFO)
+logging.basicConfig(filename=os.environ.get(
+    'LOGGING_FILE', '/var/log/test.log'), level=logging.INFO)
 app = Flask(__name__)
 
 # Redis setup
@@ -51,6 +52,11 @@ def get_conversation_name_without_location(conversation_name):
 
 def cloud_pubsub_handler(request, data_type):
     """Verifies and checks requests from Cloud Pub/Sub."""
+    if not request.is_json:
+        msg = 'No Pub/Sub message received.'
+        logging.warning('Warning: {}'.format(msg))
+        return True
+
     envelope = request.get_json()
     if not envelope:
         msg = 'No Pub/Sub message received.'
@@ -126,7 +132,7 @@ def cloud_pubsub_handler(request, data_type):
 def subscribe_suggestions():
     """Receives new human agent assist events from pre-configured dialogflow Pub/Sub topic."""
     if not cloud_pubsub_handler(request, 'human-agent-assistant-event'):
-        return f'Bad Request', 400
+        return 'Bad Request', 400
 
     return ('Received by cloud run service as a HumanAgentAssistantEvent.', 204)
 
@@ -135,7 +141,7 @@ def subscribe_suggestions():
 def subscribe_lifecycle_events():
     """Receives new conversation events from pre-configured dialogflow Pub/Sub topic."""
     if not cloud_pubsub_handler(request, 'conversation-lifecycle-event'):
-        return f'Bad Request', 400
+        return 'Bad Request', 400
 
     return ('Received by cloud run service as a ConversationEvent.', 204)
 
@@ -144,7 +150,7 @@ def subscribe_lifecycle_events():
 def subscribe_message_events():
     """Receives new message events from pre-configured dialogflow Pub/Sub topic."""
     if not cloud_pubsub_handler(request, 'new-message-event'):
-        return f'Bad Request', 400
+        return 'Bad Request', 400
 
     return ('Received by cloud run service as a ConversationEvent.', 204)
 
@@ -153,7 +159,7 @@ def subscribe_message_events():
 def subscribe_new_recognition_result_events():
     """Receives new recognition result events from pre-configured dialogflow Pub/Sub topic."""
     if not cloud_pubsub_handler(request, 'new-recognition-result-notification-event'):
-        return f'Bad Request', 400
+        return 'Bad Request', 400
 
     return ('Received by cloud run service as a New recognition result notification.', 204)
 
