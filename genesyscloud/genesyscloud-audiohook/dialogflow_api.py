@@ -19,6 +19,7 @@ Reference: https://cloud.google.com/python/docs/reference/dialogflow/latest/goog
 import logging
 import re
 import time
+import hashlib
 
 import google.auth
 import redis
@@ -75,6 +76,19 @@ def create_conversation_name(conversation_id: str, location_id: str, project: st
     """Set conversation name for the object
     """
     return f"projects/{project}/locations/{location_id}/conversations/{conversation_id}"
+
+
+def store_conversation_mapping(integration_key: str, conversation_name: str):
+    """Stores the conversationIntegrationKey:conversationName mapping in Redis."""
+    if not integration_key or not conversation_name:
+        logging.warning("Cannot store mapping with empty key or conversation name.")
+        return
+    hashed_key = hashlib.sha256(integration_key.encode('utf-8')).hexdigest()
+    try:
+        redis_client.set(hashed_key, conversation_name)
+        logging.info("Stored mapping in Redis: %s (hash: %s) -> %s", integration_key, hashed_key, conversation_name)
+    except Exception as e:
+        logging.error("Failed to store conversation name mapping in Redis: %s", e)
 
 
 def find_participant_by_role(role: dialogflow.Participant.Role, participants_list: list[dialogflow.Participant]) -> dialogflow.Participant | None:

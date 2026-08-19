@@ -159,9 +159,7 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
   handleConversationEndedForGenesysCloud() {
     // Generate a summary when a Genesys Cloud conversation ends
     this.lwc.debugLog("handleConversationEndedForGenesysCloud called");
-    if (this.lwc.features.includes("CONVERSATION_SUMMARIZATION")) {
-      this.lwc.triggerSummarization();
-    }
+    this.lwc.triggerSummarization();
     this.pollForConversationNameByIntegrationKey(this.lwc.contactPhone);
   }
 }

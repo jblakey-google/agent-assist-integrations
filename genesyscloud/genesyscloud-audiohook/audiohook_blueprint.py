@@ -31,7 +31,7 @@ from audio_stream import Stream
 from audiohook import DEFAULT_CONVERSATION_ID, AudioHook
 from audiohook_config import config
 from dialogflow_api import (DialogflowAPI, await_redis, create_conversation_name,
-                            find_participant_by_role, location_id, project)
+                            store_conversation_mapping, find_participant_by_role, location_id, project)
 
 audiohook_bp = Blueprint("audiohook", __name__)
 sock = Sock(audiohook_bp)
@@ -62,7 +62,8 @@ def process_open_conversation_message(
         agent_stream: Stream,
         customer_stream: Stream,
         ws: Server,
-        audiohook: AudioHook
+        audiohook: AudioHook,
+        ani: str = ""
 ) -> OpenConversationState:
     """Process "open" message get from Audiohook Monitor, and establish a state
     object for conversation_name, agent_thread, user_thread, and is_opened bool
@@ -83,6 +84,9 @@ def process_open_conversation_message(
         logging.warning("Error getting the conversation : %s", e)
         dialogflow_api.create_conversation(
             conversation_profile, normalized_conversation_id)
+
+    if ani:
+        store_conversation_mapping(ani, conversation_name)
 
     try:
         participants_list = dialogflow_api.list_participant(
@@ -227,6 +231,9 @@ def audiohook_connect(ws: Server):
                     # calling streaming_analyze_content
                     # a bool flag indicating if conversation, participants have been initialized
                     # and the conversation_name for the dialogflow.Conversation object
+                    ani = json_message.get("parameters", {}).get("participant", {}).get("ani", "")
+                    if ani.startswith("tel:"):
+                        ani = ani[4:]
                     open_conversation_state = process_open_conversation_message(
                         conversation_id,
                         dialogflow_api,
@@ -234,6 +241,7 @@ def audiohook_connect(ws: Server):
                         customer_stream,
                         ws,
                         audiohook,
+                        ani=ani
                     )
                     logging.debug(
                         "open conversation message %s ", open_conversation_state)
