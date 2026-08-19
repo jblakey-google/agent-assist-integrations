@@ -45,7 +45,9 @@ describe("GenesysCloudPlatformService", () => {
     );
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   describe("constructor", () => {
     it("initializes with lwc and refs parameters", () => {
@@ -105,6 +107,42 @@ describe("GenesysCloudPlatformService", () => {
       await genesysCloudPlatformService.init();
 
       expect(spy).toHaveBeenCalled();
+    });
+
+    it("aborts early if isTeardown is true", async () => {
+      genesysCloudPlatformService.isTeardown = true;
+      const fetchSpy = jest.spyOn(genesysCloudPlatformService, "fetchConversationName");
+
+      await genesysCloudPlatformService.init();
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("waitForContactPhone", () => {
+    it("resolves when contactPhone becomes available", async () => {
+      jest.useFakeTimers();
+      mockLwc.contactPhone = null;
+      let resolved = false;
+
+      const promise = genesysCloudPlatformService.waitForContactPhone().then(() => {
+        resolved = true;
+      });
+
+      expect(resolved).toBe(false);
+
+      // Fast-forward time
+      jest.advanceTimersByTime(500);
+      expect(resolved).toBe(false);
+
+      // Set phone number
+      mockLwc.contactPhone = "123456";
+
+      // Fast-forward time again
+      jest.advanceTimersByTime(500);
+      await promise;
+
+      expect(resolved).toBe(true);
     });
   });
 
@@ -204,12 +242,22 @@ describe("GenesysCloudPlatformService", () => {
   });
 
   describe("handleConversationEndedForGenesysCloud", () => {
-    it("triggers summarization when the conversation is ended", () => {
+    it("triggers summarization when the feature is enabled", () => {
       mockLwc.conversationName = "test-conversation-name";
+      mockLwc.features = "CONVERSATION_SUMMARIZATION";
 
       genesysCloudPlatformService.handleConversationEndedForGenesysCloud();
 
       expect(mockLwc.triggerSummarization).toHaveBeenCalled();
+    });
+
+    it("does not trigger summarization when the feature is disabled", () => {
+      mockLwc.conversationName = "test-conversation-name";
+      mockLwc.features = "";
+
+      genesysCloudPlatformService.handleConversationEndedForGenesysCloud();
+
+      expect(mockLwc.triggerSummarization).not.toHaveBeenCalled();
     });
 
     it("starts polling for conversation name after handling conversation ended", () => {

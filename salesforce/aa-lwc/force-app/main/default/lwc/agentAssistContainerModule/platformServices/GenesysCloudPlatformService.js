@@ -18,10 +18,7 @@ import BasePlatformService from './BasePlatformService';
 
 export default class GenesysCloudPlatformService extends BasePlatformService {
   pollingTimeout = null;
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Init & Teardown
-  ////////////////////////////////////////////////////////////////////////////
+  isTeardown = false;
 
   constructor(lwc, refs) {
     super(lwc, refs);
@@ -29,35 +26,53 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
   }
 
   async init() {
-    // Set up Agent Assist UIM to work with Genesys Cloud
     this.lwc.debugLog('initGenesysCloud called');
-    this.lwc.conversationName = await this.fetchConversationName(
+
+    // Wait for contactPhone to be available if it's not yet loaded
+    if (!this.lwc.contactPhone) {
+      this.lwc.debugLog('Waiting for contactPhone to be loaded...');
+      await this.waitForContactPhone();
+    }
+    if (this.isTeardown) return;
+
+    const conversationName = await this.fetchConversationName(
       this.lwc.contactPhone,
     );
+    if (this.isTeardown) return;
+    this.lwc.conversationName = conversationName;
+
     if (
       !this.lwc.conversationName ||
       (await this.isConversationCompleted(this.lwc.contactPhone))
     ) {
+      if (this.isTeardown) return;
       this.pollForConversationNameByIntegrationKey(this.lwc.contactPhone);
     }
+    if (this.isTeardown) return;
     this.listenToAgentAssistEventsForGenesysCloud();
   }
 
+  async waitForContactPhone() {
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (this.lwc.contactPhone || this.isTeardown) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 500);
+    });
+  }
+
   teardown() {
-    // Clean up Agent Assist UIM Genesys Cloud
+    this.isTeardown = true;
     super.teardown();
     if (this.pollingTimeout) {
       clearTimeout(this.pollingTimeout);
     }
   }
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Setup Event Listeners and Subscriptions
-  ////////////////////////////////////////////////////////////////////////////
-
   listenToAgentAssistEventsForGenesysCloud() {
     this.lwc.debugLog('listenToAgentAssistEventsForGenesysCloud called');
-    // Handle Agent Assist events
     addAgentAssistEventListener(
       "conversation-completed",
       this.handleConversationEndedForGenesysCloud,
@@ -65,13 +80,12 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
     );
   }
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Handle Events
-  ////////////////////////////////////////////////////////////////////////////
-
   async fetchConversationName(conversationIntegrationKey, timeout = 5000) {
-    // Gets conversationName from Redis using conversationIntegrationKey.
-    // Presence intended to trigger UI Module init for CTI add-on based integrations.
+    if (!conversationIntegrationKey) {
+      this.lwc.debugLog('fetchConversationName called with empty integration key');
+      return null;
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -93,13 +107,11 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        // Re-throw the abort error so the poller can catch it and stop.
         throw error;
-      } else {
-        this.lwc.debugLog(
-          `Network error fetching conversation name: ${error.message}`,
-        );
       }
+      this.lwc.debugLog(
+        `Network error fetching conversation name: ${error.message}`,
+      );
     } finally {
       clearTimeout(timeoutId);
     }
@@ -114,41 +126,46 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
       requestTimeoutMs = 9900,
     } = {},
   ) {
-    // Poll continuously for a conversationName with a backoff.
-    // It starts polling rapidly, then cools down to a 10-second interval.
+    if (!conversationIntegrationKey) {
+      this.lwc.debugLog('pollForConversationNameByIntegrationKey called with empty integration key');
+      return;
+    }
+
     this.lwc.conversationName = undefined;
     let attempt = 0;
 
     const poll = async (delayMs) => {
+      if (this.isTeardown) return;
       attempt++;
       this.lwc.debugLog(`Polling for conversationName... (attempt ${attempt}, delay: ${delayMs}ms)`);
 
       try {
-        this.lwc.conversationName = await this.fetchConversationName(
+        const conversationName = await this.fetchConversationName(
           conversationIntegrationKey,
           requestTimeoutMs,
         );
+        if (this.isTeardown) return;
 
         if (
-          this.lwc.conversationName &&
+          conversationName &&
           !(await this.isConversationCompleted(conversationIntegrationKey))
         ) {
+          if (this.isTeardown) return;
+          this.lwc.conversationName = conversationName;
           this.lwc.debugLog(`Found conversationName: ${this.lwc.conversationName}. Initializing UI Modules.`);
           this.handleConnectorInitialized();
           this.initUIModules();
-          return; // Stop polling on success
+          return;
         } else {
-          throw new Error('Conversation not found or already completed.'); // Force retry
+          throw new Error('Conversation not found or already completed.');
         }
       } catch (error) {
+        if (this.isTeardown) return;
         this.lwc.debugLog(`Polling attempt ${attempt} failed: ${error.message}`);
 
-        // Calculate the next delay with a linear increase, capped at maxDelay.
-        // This reaches maxDelay in ~10 attempts.
         const increment = (maxDelay - initialDelay) / 10;
         const nextDelay = Math.min(maxDelay, delayMs + increment);
 
-        // Schedule the next poll.
         this.pollingTimeout = setTimeout(() => poll(nextDelay), delayMs);
       }
     };
@@ -157,9 +174,11 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
   }
 
   handleConversationEndedForGenesysCloud() {
-    // Generate a summary when a Genesys Cloud conversation ends
+    if (this.isTeardown) return;
     this.lwc.debugLog("handleConversationEndedForGenesysCloud called");
-    this.lwc.triggerSummarization();
+    if (this.lwc.features && this.lwc.features.includes("CONVERSATION_SUMMARIZATION")) {
+      this.lwc.triggerSummarization();
+    }
     this.pollForConversationNameByIntegrationKey(this.lwc.contactPhone);
   }
 }
