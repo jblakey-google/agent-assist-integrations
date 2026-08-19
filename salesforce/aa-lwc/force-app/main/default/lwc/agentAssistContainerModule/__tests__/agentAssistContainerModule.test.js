@@ -26,6 +26,9 @@ jest.mock("./../platformServices/MessagingPlatformService", () =>
 jest.mock("./../platformServices/TwilioFlexPlatformService", () =>
   require("../platformServices/testUtils").createMockPlatformService()
 );
+jest.mock("./../platformServices/GenesysCloudPlatformService", () =>
+  require("../platformServices/testUtils").createMockPlatformService()
+);
 jest.mock("./../platformServices/ServiceCloudVoicePlatformService", () =>
   require("../platformServices/testUtils").createMockPlatformService()
 );
@@ -33,6 +36,7 @@ jest.mock("./../platformServices/ServiceCloudVoicePlatformService", () =>
 // These imports must come after the jest.mock calls.
 import MessagingPlatformService from "./../platformServices/MessagingPlatformService";
 import TwilioFlexPlatformService from "./../platformServices/TwilioFlexPlatformService";
+import GenesysCloudPlatformService from "./../platformServices/GenesysCloudPlatformService";
 import ServiceCloudVoicePlatformService from "./../platformServices/ServiceCloudVoicePlatformService";
 
 // Mock the script loader to prevent tests from trying to load external JavaScript files.
@@ -142,6 +146,20 @@ describe("c-agent-assist-container-module", () => {
         await tick();
 
         // The MessagingPlatformService is mocked to return an object, not an instance of the class
+        expect(element.platformService).toBeTruthy();
+        expect(element.loadError).not.toBeInstanceOf(Error);
+      });
+
+      it("should instantiate GenesysCloudPlatformService when platform is genesyscloud", async () => {
+        element.refs = {
+          conversationToolkitApi: {},
+          serviceCloudVoiceToolkitApi: {}
+        };
+        element.platform = "genesyscloud";
+
+        document.body.appendChild(element);
+        await tick();
+
         expect(element.platformService).toBeTruthy();
         expect(element.loadError).not.toBeInstanceOf(Error);
       });
