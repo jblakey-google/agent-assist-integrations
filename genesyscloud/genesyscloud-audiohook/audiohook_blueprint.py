@@ -85,8 +85,8 @@ def process_open_conversation_message(
         dialogflow_api.create_conversation(
             conversation_profile, normalized_conversation_id)
 
-    if ani:
-        store_conversation_mapping(ani, conversation_name)
+    integration_key = ani if ani else conversation_id
+    store_conversation_mapping(integration_key, conversation_name)
 
     try:
         participants_list = dialogflow_api.list_participant(

@@ -19,7 +19,6 @@ Reference: https://cloud.google.com/python/docs/reference/dialogflow/latest/goog
 import logging
 import re
 import time
-import hashlib
 
 import google.auth
 import redis
@@ -79,16 +78,42 @@ def create_conversation_name(conversation_id: str, location_id: str, project: st
 
 
 def store_conversation_mapping(integration_key: str, conversation_name: str):
-    """Stores the conversationIntegrationKey:conversationName mapping in Redis."""
+    """Stores the conversationIntegrationKey:conversationName mapping via UI Connector."""
     if not integration_key or not conversation_name:
         logging.warning("Cannot store mapping with empty key or conversation name.")
         return
-    hashed_key = hashlib.sha256(integration_key.encode('utf-8')).hexdigest()
+    import requests
     try:
-        redis_client.set(hashed_key, conversation_name)
-        logging.info("Stored mapping in Redis: %s (hash: %s) -> %s", integration_key, hashed_key, conversation_name)
+        url = f"{config.ui_connector_endpoint}/conversation-name"
+        payload = {
+            "conversationIntegrationKey": integration_key,
+            "conversationName": conversation_name
+        }
+        
+        # If UI connector requires auth for backends, obtain a token. 
+        # Genesys might not have an app token mechanism in ui-connector yet, 
+        # but we attempt to use the API key if /register accepts it, or just proceed.
+        headers = {"Content-Type": "application/json"}
+        
+        try:
+            token_url = f"{config.ui_connector_endpoint}/register"
+            token_headers = {
+                "Authorization": f"Bearer {config.api_key}",
+                "Content-Type": "application/json"
+            }
+            token_resp = requests.post(token_url, headers=token_headers, timeout=5)
+            if token_resp.status_code == 200:
+                token = token_resp.json().get("token")
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+        except Exception:
+            pass # fallback to unauthorized POST
+            
+        response = requests.post(url, json=payload, headers=headers, timeout=5)
+        response.raise_for_status()
+        logging.info("Stored mapping in UI connector: %s -> %s", integration_key, conversation_name)
     except Exception as e:
-        logging.error("Failed to store conversation name mapping in Redis: %s", e)
+        logging.error("Failed to store conversation name mapping via UI connector: %s", e)
 
 
 def find_participant_by_role(role: dialogflow.Participant.Role, participants_list: list[dialogflow.Participant]) -> dialogflow.Participant | None:
