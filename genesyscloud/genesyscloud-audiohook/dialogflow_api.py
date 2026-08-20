@@ -90,24 +90,16 @@ def store_conversation_mapping(integration_key: str, conversation_name: str):
             "conversationName": conversation_name
         }
         
-        # If UI connector requires auth for backends, obtain a token. 
-        # Genesys might not have an app token mechanism in ui-connector yet, 
-        # but we attempt to use the API key if /register accepts it, or just proceed.
+        # Authenticate using a Google OIDC token (Cloud Run to Cloud Run)
         headers = {"Content-Type": "application/json"}
-        
         try:
-            token_url = f"{config.ui_connector_endpoint}/register"
-            token_headers = {
-                "Authorization": f"Bearer {config.api_key}",
-                "Content-Type": "application/json"
-            }
-            token_resp = requests.post(token_url, headers=token_headers, timeout=5)
-            if token_resp.status_code == 200:
-                token = token_resp.json().get("token")
-                if token:
-                    headers["Authorization"] = f"Bearer {token}"
-        except Exception:
-            pass # fallback to unauthorized POST
+            import google.auth.transport.requests
+            import google.oauth2.id_token
+            req = google.auth.transport.requests.Request()
+            token = google.oauth2.id_token.fetch_id_token(req, config.ui_connector_endpoint)
+            headers["Authorization"] = f"Bearer {token}"
+        except Exception as e:
+            logging.warning("Failed to fetch Google ID token: %s", e)
             
         response = requests.post(url, json=payload, headers=headers, timeout=5)
         response.raise_for_status()

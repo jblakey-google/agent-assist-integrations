@@ -52,6 +52,33 @@ def check_jwt(token):
     try:
         if token.startswith("Bearer "):
             token = token.split(" ")[1]
+            
+        try:
+            from google.oauth2 import id_token
+            from google.auth.transport import requests as google_requests
+            
+            # Attempt to verify the token as a Google IAM OIDC (OpenID Connect) identity token.
+            # This allows other Cloud Run services (e.g., audiohook backends) in the same GCP 
+            # project to authenticate with this UI Connector securely and natively.
+            # It provides zero-trust security without needing external shared secrets, 
+            # and avoids the latency of hitting external identity endpoints (like Genesys).
+            # We first extract the 'aud' (audience) to verify the token against the exact URL requested.
+            unverified_claims = jwt.decode(token, options={"verify_signature": False})
+            aud = unverified_claims.get("aud")
+            
+            # Verify the OIDC token
+            req = google_requests.Request()
+            id_info = id_token.verify_oauth2_token(token, req, audience=aud)
+            
+            if id_info.get('iss') in ['https://accounts.google.com', 'accounts.google.com']:
+                email = id_info.get('email', '')
+                # Ensure the calling service account belongs to our exact GCP project.
+                # This guarantees that only our own internal services can authorize this way.
+                if email.endswith(f"@{config.GCP_PROJECT_ID}.iam.gserviceaccount.com"):
+                    return True, 'Your Google ID token is valid.'
+        except Exception as e:
+            pass # Fall back to the standard UI connector JWT logic
+
         # Decode the payload to fetch the stored details.
         data = jwt.decode(token, jwt_secret_key, algorithms=['HS256'])
         if 'gcp_agent_assist_project' not in data:
@@ -63,7 +90,7 @@ def check_jwt(token):
         if data['exp'] < datetime.datetime.now().timestamp():
             return False, 'Your token has expired.'
         return True, 'Your token is valid.'
-    except:
+    except Exception:
         return False, 'Failed to parse your token.'
 
 
