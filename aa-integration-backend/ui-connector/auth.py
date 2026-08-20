@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import datetime
 import jwt
 import requests
@@ -25,8 +26,10 @@ jwt_secret_key = ''  # To be loaded from config.JWT_SECRET_KEY_PATH
 
 
 def load_jwt_secret_key():
-    with open(config.JWT_SECRET_KEY_PATH, 'r') as key_file:
-        jwt_secret_key = key_file.read()
+    global jwt_secret_key
+    if os.path.exists(config.JWT_SECRET_KEY_PATH):
+        with open(config.JWT_SECRET_KEY_PATH, 'r') as key_file:
+            jwt_secret_key = key_file.read()
 
 
 def check_auth(token):
@@ -51,7 +54,7 @@ def check_auth(token):
 def check_jwt(token):
     try:
         if token.startswith("Bearer "):
-            token = token.split(" ")[1]
+            token = token.split(" ", 1)[1]
             
         try:
             from google.oauth2 import id_token
@@ -60,9 +63,6 @@ def check_jwt(token):
             # Attempt to verify the token as a Google IAM OIDC (OpenID Connect) identity token.
             # This allows other Cloud Run services (e.g., audiohook backends) in the same GCP 
             # project to authenticate with this UI Connector securely and natively.
-            # It provides zero-trust security without needing external shared secrets, 
-            # and avoids the latency of hitting external identity endpoints (like Genesys).
-            # We first extract the 'aud' (audience) to verify the token against the exact URL requested.
             unverified_claims = jwt.decode(token, options={"verify_signature": False})
             aud = unverified_claims.get("aud")
             

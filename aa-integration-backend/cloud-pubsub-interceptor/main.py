@@ -51,7 +51,7 @@ def get_conversation_name_without_location(conversation_name):
 
 def cloud_pubsub_handler(request, data_type):
     """Verifies and checks requests from Cloud Pub/Sub."""
-    envelope = request.get_json()
+    envelope = request.get_json(silent=True)
     if not envelope:
         msg = 'No Pub/Sub message received.'
         logging.warning('Warning: {}'.format(msg))

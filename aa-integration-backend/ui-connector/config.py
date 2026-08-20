@@ -16,7 +16,7 @@ import os
 import logging
 
 # The id of the GCP project where Cloud Run services are deployed on.
-GCP_PROJECT_ID = os.environ['GCP_PROJECT_ID']
+GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID', '')
 
 # Set up the connection with Redis database
 REDIS_HOST = os.environ.get('REDISHOST', 'localhost')

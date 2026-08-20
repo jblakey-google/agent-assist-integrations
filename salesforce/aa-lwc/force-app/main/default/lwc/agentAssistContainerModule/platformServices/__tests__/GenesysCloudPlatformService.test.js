@@ -72,6 +72,7 @@ describe("GenesysCloudPlatformService", () => {
     });
 
     it("fetches conversation name when conversationName is not set", async () => {
+      genesysCloudPlatformService.genesysConversationId = "test-genesys-id";
       global.fetch.mockResolvedValue({
         ok: true,
         json: () =>
@@ -81,7 +82,7 @@ describe("GenesysCloudPlatformService", () => {
       await genesysCloudPlatformService.init();
 
       expect(global.fetch).toHaveBeenCalledWith(
-        "https://test-endpoint.com/conversation-name?conversationIntegrationKey=test-contact-phone",
+        "https://test-endpoint.com/conversation-name?conversationIntegrationKey=test-genesys-id",
         {
           method: "GET",
           headers: {
@@ -94,6 +95,7 @@ describe("GenesysCloudPlatformService", () => {
     });
 
     it("polls for conversation name when conversationName is not set and not completed", async () => {
+      genesysCloudPlatformService.genesysConversationId = "test-genesys-id";
       global.fetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ conversationName: null })
@@ -106,7 +108,7 @@ describe("GenesysCloudPlatformService", () => {
 
       await genesysCloudPlatformService.init();
 
-      expect(spy).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith("test-genesys-id");
     });
 
     it("aborts early if isTeardown is true", async () => {
@@ -119,30 +121,97 @@ describe("GenesysCloudPlatformService", () => {
     });
   });
 
-  describe("waitForContactPhone", () => {
-    it("resolves when contactPhone becomes available", async () => {
+  describe("waitForGenesysConversationId", () => {
+    it("resolves when genesysConversationId becomes available", async () => {
       jest.useFakeTimers();
-      mockLwc.contactPhone = null;
+      genesysCloudPlatformService.genesysConversationId = null;
       let resolved = false;
 
-      const promise = genesysCloudPlatformService.waitForContactPhone().then(() => {
+      const promise = genesysCloudPlatformService.waitForGenesysConversationId().then(() => {
         resolved = true;
       });
 
       expect(resolved).toBe(false);
 
-      // Fast-forward time
       jest.advanceTimersByTime(500);
       expect(resolved).toBe(false);
 
-      // Set phone number
-      mockLwc.contactPhone = "123456";
+      // Set genesys ID
+      genesysCloudPlatformService.genesysConversationId = "abcd-1234";
 
-      // Fast-forward time again
       jest.advanceTimersByTime(500);
       await promise;
 
       expect(resolved).toBe(true);
+    });
+
+    it("resolves when isTeardown is true", async () => {
+      jest.useFakeTimers();
+      genesysCloudPlatformService.genesysConversationId = null;
+      let resolved = false;
+
+      const promise = genesysCloudPlatformService.waitForGenesysConversationId().then(() => {
+        resolved = true;
+      });
+
+      expect(resolved).toBe(false);
+
+      genesysCloudPlatformService.isTeardown = true;
+
+      jest.advanceTimersByTime(500);
+      await promise;
+
+      expect(resolved).toBe(true);
+    });
+  });
+
+  describe("handleGenesysMessage", () => {
+    it("sets genesysConversationId and starts polling on interactionSubscription", () => {
+      const spy = jest.spyOn(
+        genesysCloudPlatformService,
+        "pollForConversationNameByIntegrationKey"
+      );
+      
+      const event = {
+        data: {
+          type: "interactionSubscription",
+          data: {
+            interaction: {
+              id: "new-convo-id"
+            }
+          }
+        }
+      };
+
+      genesysCloudPlatformService.handleGenesysMessage(event);
+
+      expect(genesysCloudPlatformService.genesysConversationId).toBe("new-convo-id");
+      expect(spy).toHaveBeenCalledWith("new-convo-id");
+    });
+    
+    it("clears old polling timeout and starts new polling if already polling", () => {
+      const spy = jest.spyOn(
+        genesysCloudPlatformService,
+        "pollForConversationNameByIntegrationKey"
+      );
+      
+      const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
+      genesysCloudPlatformService.pollingTimeout = "existing-timeout";
+      
+      const event = {
+        data: JSON.stringify({
+          type: "PureCloud.Interaction",
+          data: {
+            id: "another-convo-id"
+          }
+        })
+      };
+
+      genesysCloudPlatformService.handleGenesysMessage(event);
+
+      expect(genesysCloudPlatformService.genesysConversationId).toBe("another-convo-id");
+      expect(clearTimeoutSpy).toHaveBeenCalledWith("existing-timeout");
+      expect(spy).toHaveBeenCalledWith("another-convo-id");
     });
   });
 
@@ -262,6 +331,7 @@ describe("GenesysCloudPlatformService", () => {
 
     it("starts polling for conversation name after handling conversation ended", () => {
       mockLwc.conversationName = "test-conversation-name";
+      genesysCloudPlatformService.genesysConversationId = "test-genesys-id";
 
       const spy = jest.spyOn(
         genesysCloudPlatformService,
@@ -270,7 +340,7 @@ describe("GenesysCloudPlatformService", () => {
 
       genesysCloudPlatformService.handleConversationEndedForGenesysCloud();
 
-      expect(spy).toHaveBeenCalledWith("test-contact-phone");
+      expect(spy).toHaveBeenCalledWith("test-genesys-id");
     });
   });
 });

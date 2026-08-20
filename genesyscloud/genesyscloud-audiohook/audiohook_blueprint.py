@@ -62,8 +62,7 @@ def process_open_conversation_message(
         agent_stream: Stream,
         customer_stream: Stream,
         ws: Server,
-        audiohook: AudioHook,
-        ani: str = ""
+        audiohook: AudioHook
 ) -> OpenConversationState:
     """Process "open" message get from Audiohook Monitor, and establish a state
     object for conversation_name, agent_thread, user_thread, and is_opened bool
@@ -85,8 +84,7 @@ def process_open_conversation_message(
         dialogflow_api.create_conversation(
             conversation_profile, normalized_conversation_id)
 
-    integration_key = ani if ani else conversation_id
-    store_conversation_mapping(integration_key, conversation_name)
+    store_conversation_mapping(conversation_id, conversation_name)
 
     try:
         participants_list = dialogflow_api.list_participant(
@@ -231,17 +229,13 @@ def audiohook_connect(ws: Server):
                     # calling streaming_analyze_content
                     # a bool flag indicating if conversation, participants have been initialized
                     # and the conversation_name for the dialogflow.Conversation object
-                    ani = json_message.get("parameters", {}).get("participant", {}).get("ani", "")
-                    if ani.startswith("tel:"):
-                        ani = ani[4:]
                     open_conversation_state = process_open_conversation_message(
                         conversation_id,
                         dialogflow_api,
                         agent_stream,
                         customer_stream,
                         ws,
-                        audiohook,
-                        ani=ani
+                        audiohook
                     )
                     logging.debug(
                         "open conversation message %s ", open_conversation_state)

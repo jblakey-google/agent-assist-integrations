@@ -19,43 +19,74 @@ import BasePlatformService from './BasePlatformService';
 export default class GenesysCloudPlatformService extends BasePlatformService {
   pollingTimeout = null;
   isTeardown = false;
+  genesysConversationId = null;
 
   constructor(lwc, refs) {
     super(lwc, refs);
     this.handleConversationEndedForGenesysCloud = this.handleConversationEndedForGenesysCloud.bind(this);
+    this.handleGenesysMessage = this.handleGenesysMessage.bind(this);
   }
 
   async init() {
     this.lwc.debugLog('initGenesysCloud called');
 
-    // Wait for contactPhone to be available if it's not yet loaded
-    if (!this.lwc.contactPhone) {
-      this.lwc.debugLog('Waiting for contactPhone to be loaded...');
-      await this.waitForContactPhone();
-    }
-    if (this.isTeardown) return;
+    // Listen for postMessage updates broadcasted by the Genesys CTI framework
+    window.addEventListener('message', this.handleGenesysMessage);
 
-    const conversationName = await this.fetchConversationName(
-      this.lwc.contactPhone,
-    );
+    // Wait for Genesys CTI conversation ID to be available
+    if (!this.genesysConversationId) {
+      this.lwc.debugLog('Waiting for Genesys conversation ID from CTI event...');
+      await this.waitForGenesysConversationId();
+    }
+    if (this.isTeardown || !this.genesysConversationId) return;
+
+    const conversationName = await this.fetchConversationName(this.genesysConversationId);
     if (this.isTeardown) return;
     this.lwc.conversationName = conversationName;
 
     if (
       !this.lwc.conversationName ||
-      (await this.isConversationCompleted(this.lwc.contactPhone))
+      (await this.isConversationCompleted(this.genesysConversationId))
     ) {
       if (this.isTeardown) return;
-      this.pollForConversationNameByIntegrationKey(this.lwc.contactPhone);
+      this.pollForConversationNameByIntegrationKey(this.genesysConversationId);
     }
     if (this.isTeardown) return;
     this.listenToAgentAssistEventsForGenesysCloud();
   }
 
-  async waitForContactPhone() {
+  handleGenesysMessage(event) {
+    try {
+      const payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      
+      // Check for Genesys interaction subscription events
+      if (payload && (payload.type === 'interactionSubscription' || payload.type === 'PureCloud.Interaction')) {
+        const interaction = payload.data?.interaction || payload.data;
+        if (interaction && interaction.id) {
+          const newConversationId = interaction.id;
+          if (this.genesysConversationId !== newConversationId) {
+            this.genesysConversationId = newConversationId;
+            this.lwc.debugLog(`Received Genesys conversation ID from CTI event: ${newConversationId}`);
+            
+            // If we are already polling or don't have a conversation yet, switch to the new ID
+            if (this.pollingTimeout) {
+              clearTimeout(this.pollingTimeout);
+              this.pollForConversationNameByIntegrationKey(newConversationId);
+            } else if (!this.lwc.conversationName) {
+              this.pollForConversationNameByIntegrationKey(newConversationId);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Handle non-JSON or unrelated window messages gracefully
+    }
+  }
+
+  async waitForGenesysConversationId() {
     return new Promise((resolve) => {
       const interval = setInterval(() => {
-        if (this.lwc.contactPhone || this.isTeardown) {
+        if (this.genesysConversationId || this.isTeardown) {
           clearInterval(interval);
           resolve();
         }
@@ -69,6 +100,7 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
     if (this.pollingTimeout) {
       clearTimeout(this.pollingTimeout);
     }
+    window.removeEventListener('message', this.handleGenesysMessage);
   }
 
   listenToAgentAssistEventsForGenesysCloud() {
@@ -179,6 +211,8 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
     if (this.lwc.features && this.lwc.features.includes("CONVERSATION_SUMMARIZATION")) {
       this.lwc.triggerSummarization();
     }
-    this.pollForConversationNameByIntegrationKey(this.lwc.contactPhone);
+    if (this.genesysConversationId) {
+      this.pollForConversationNameByIntegrationKey(this.genesysConversationId);
+    }
   }
 }
