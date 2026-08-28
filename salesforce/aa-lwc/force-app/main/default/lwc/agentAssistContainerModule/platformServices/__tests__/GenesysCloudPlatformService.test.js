@@ -113,7 +113,10 @@ describe("GenesysCloudPlatformService", () => {
 
     it("aborts early if isTeardown is true", async () => {
       genesysCloudPlatformService.isTeardown = true;
-      const fetchSpy = jest.spyOn(genesysCloudPlatformService, "fetchConversationName");
+      const fetchSpy = jest.spyOn(
+        genesysCloudPlatformService,
+        "fetchConversationName"
+      );
 
       await genesysCloudPlatformService.init();
 
@@ -127,19 +130,21 @@ describe("GenesysCloudPlatformService", () => {
       genesysCloudPlatformService.genesysConversationId = null;
       let resolved = false;
 
-      const promise = genesysCloudPlatformService.waitForGenesysConversationId().then(() => {
-        resolved = true;
-      });
+      const promise = genesysCloudPlatformService
+        .waitForGenesysConversationId()
+        .then(() => {
+          resolved = true;
+        });
 
       expect(resolved).toBe(false);
 
-      jest.advanceTimersByTime(500);
+      jest.advanceTimersByTime(1000);
       expect(resolved).toBe(false);
 
       // Set genesys ID
       genesysCloudPlatformService.genesysConversationId = "abcd-1234";
 
-      jest.advanceTimersByTime(500);
+      jest.advanceTimersByTime(1000);
       await promise;
 
       expect(resolved).toBe(true);
@@ -150,15 +155,17 @@ describe("GenesysCloudPlatformService", () => {
       genesysCloudPlatformService.genesysConversationId = null;
       let resolved = false;
 
-      const promise = genesysCloudPlatformService.waitForGenesysConversationId().then(() => {
-        resolved = true;
-      });
+      const promise = genesysCloudPlatformService
+        .waitForGenesysConversationId()
+        .then(() => {
+          resolved = true;
+        });
 
       expect(resolved).toBe(false);
 
       genesysCloudPlatformService.isTeardown = true;
 
-      jest.advanceTimersByTime(500);
+      jest.advanceTimersByTime(1000);
       await promise;
 
       expect(resolved).toBe(true);
@@ -171,13 +178,13 @@ describe("GenesysCloudPlatformService", () => {
         genesysCloudPlatformService,
         "pollForConversationNameByIntegrationKey"
       );
-      
+
       const event = {
         data: {
           type: "interactionSubscription",
           data: {
             interaction: {
-              id: "new-convo-id"
+              id: "11111111-2222-3333-4444-555555555555"
             }
           }
         }
@@ -185,33 +192,37 @@ describe("GenesysCloudPlatformService", () => {
 
       genesysCloudPlatformService.handleGenesysMessage(event);
 
-      expect(genesysCloudPlatformService.genesysConversationId).toBe("new-convo-id");
-      expect(spy).toHaveBeenCalledWith("new-convo-id");
+      expect(genesysCloudPlatformService.genesysConversationId).toBe(
+        "11111111-2222-3333-4444-555555555555"
+      );
+      expect(spy).toHaveBeenCalledWith("11111111-2222-3333-4444-555555555555");
     });
-    
+
     it("clears old polling timeout and starts new polling if already polling", () => {
       const spy = jest.spyOn(
         genesysCloudPlatformService,
         "pollForConversationNameByIntegrationKey"
       );
-      
+
       const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
       genesysCloudPlatformService.pollingTimeout = "existing-timeout";
-      
+
       const event = {
         data: JSON.stringify({
           type: "PureCloud.Interaction",
           data: {
-            id: "another-convo-id"
+            id: "66666666-7777-8888-9999-000000000000"
           }
         })
       };
 
       genesysCloudPlatformService.handleGenesysMessage(event);
 
-      expect(genesysCloudPlatformService.genesysConversationId).toBe("another-convo-id");
+      expect(genesysCloudPlatformService.genesysConversationId).toBe(
+        "66666666-7777-8888-9999-000000000000"
+      );
       expect(clearTimeoutSpy).toHaveBeenCalledWith("existing-timeout");
-      expect(spy).toHaveBeenCalledWith("another-convo-id");
+      expect(spy).toHaveBeenCalledWith("66666666-7777-8888-9999-000000000000");
     });
   });
 
@@ -293,7 +304,7 @@ describe("GenesysCloudPlatformService", () => {
 
       expect(result).toBeNull();
       expect(mockLwc.debugLog).toHaveBeenCalledWith(
-        "Error fetching conversation name: 500 Internal Server Error"
+        "[AgentAssist] Error fetching conversation name: 500 Internal Server Error"
       );
     });
 
@@ -305,7 +316,7 @@ describe("GenesysCloudPlatformService", () => {
 
       expect(result).toBeNull();
       expect(mockLwc.debugLog).toHaveBeenCalledWith(
-        "Network error fetching conversation name: Network error"
+        "[AgentAssist] Network error fetching conversation name: Network error"
       );
     });
   });
@@ -341,6 +352,136 @@ describe("GenesysCloudPlatformService", () => {
       genesysCloudPlatformService.handleConversationEndedForGenesysCloud();
 
       expect(spy).toHaveBeenCalledWith("test-genesys-id");
+    });
+  });
+
+  describe("extractConversationId", () => {
+    it("returns null for empty or non-object payloads", () => {
+      expect(
+        genesysCloudPlatformService.extractConversationId(null)
+      ).toBeNull();
+      expect(genesysCloudPlatformService.extractConversationId("")).toBeNull();
+      expect(
+        genesysCloudPlatformService.extractConversationId(12345)
+      ).toBeNull();
+      expect(
+        genesysCloudPlatformService.extractConversationId("invalid-uuid-string")
+      ).toBeNull();
+    });
+
+    it("extracts UUID from plain UUID string", () => {
+      const uuid = "12345678-1234-1234-1234-123456789abc";
+      expect(genesysCloudPlatformService.extractConversationId(uuid)).toBe(
+        uuid
+      );
+    });
+
+    it("extracts UUID from conversationId field", () => {
+      const uuid = "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d";
+      expect(
+        genesysCloudPlatformService.extractConversationId({
+          conversationId: uuid
+        })
+      ).toBe(uuid);
+    });
+
+    it("extracts UUID from interactionId field", () => {
+      const uuid = "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e";
+      expect(
+        genesysCloudPlatformService.extractConversationId({
+          interactionId: uuid
+        })
+      ).toBe(uuid);
+    });
+
+    it("extracts UUID from nested object structures", () => {
+      const uuid = "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f";
+      const payload = {
+        data: {
+          interaction: {
+            id: uuid
+          }
+        }
+      };
+      expect(genesysCloudPlatformService.extractConversationId(payload)).toBe(
+        uuid
+      );
+    });
+
+    it("extracts UUID from array within payload", () => {
+      const uuid = "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a";
+      const payload = {
+        interactions: [{ status: "connected" }, { id: uuid, state: "active" }]
+      };
+      expect(genesysCloudPlatformService.extractConversationId(payload)).toBe(
+        uuid
+      );
+    });
+  });
+
+  describe("requestGenesysInteractions", () => {
+    it("posts messages to window and parent windows safely without throwing", () => {
+      const postMessageSpy = jest.spyOn(window, "postMessage");
+      expect(() => {
+        genesysCloudPlatformService.requestGenesysInteractions();
+      }).not.toThrow();
+      expect(postMessageSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe("pollForConversationNameByIntegrationKey", () => {
+    it("returns immediately if conversationIntegrationKey is empty", () => {
+      genesysCloudPlatformService.pollForConversationNameByIntegrationKey("");
+      expect(mockLwc.debugLog).toHaveBeenCalledWith(
+        "pollForConversationNameByIntegrationKey called with empty integration key"
+      );
+    });
+
+    it("initializes UI modules when fetchConversationName succeeds", async () => {
+      jest.useFakeTimers();
+      const fetchSpy = jest
+        .spyOn(genesysCloudPlatformService, "fetchConversationName")
+        .mockResolvedValue("projects/test/locations/global/conversations/123");
+      const initUIModulesSpy = jest.spyOn(
+        genesysCloudPlatformService,
+        "initUIModules"
+      );
+      const connectorInitSpy = jest.spyOn(
+        genesysCloudPlatformService,
+        "handleConnectorInitialized"
+      );
+
+      genesysCloudPlatformService.pollForConversationNameByIntegrationKey(
+        "12345678-1234-1234-1234-123456789abc"
+      );
+
+      // Run microtasks
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(fetchSpy).toHaveBeenCalled();
+      expect(genesysCloudPlatformService.lwc.conversationName).toBe(
+        "projects/test/locations/global/conversations/123"
+      );
+      expect(connectorInitSpy).toHaveBeenCalled();
+      expect(initUIModulesSpy).toHaveBeenCalled();
+    });
+
+    it("schedules next poll when conversationName is not found", async () => {
+      jest.useFakeTimers();
+      jest
+        .spyOn(genesysCloudPlatformService, "fetchConversationName")
+        .mockResolvedValue(null);
+
+      genesysCloudPlatformService.pollForConversationNameByIntegrationKey(
+        "12345678-1234-1234-1234-123456789abc",
+        { initialDelay: 500, maxDelay: 2000 }
+      );
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(genesysCloudPlatformService.pollingTimeout).toBeDefined();
     });
   });
 });

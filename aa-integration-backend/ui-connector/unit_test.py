@@ -559,6 +559,44 @@ class TestRestAPI(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    @patch('main.redis_client.set', return_value=False)
+    def test_set_conversation_name_redis_failure(self, mock_redis_set):
+        """Returns 400 if redis set operation fails."""
+        client = app.test_client()
+        response = client.post(
+            '/conversation-name',
+            json={
+                'conversationIntegrationKey': 'genesys-conv-123',
+                'conversationName': self.conversation_name
+            },
+            headers={'Authorization': self.valid_jwt}
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('main.redis_client.get', return_value=None)
+    def test_get_conversation_name_empty_redis(self, mock_redis_get):
+        """Returns empty string for conversationName when key does not exist in Redis."""
+        client = app.test_client()
+        response = client.get(
+            '/conversation-name?conversationIntegrationKey=nonexistent-key',
+            headers={'Authorization': self.valid_jwt}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {'conversationName': ''})
+
+    def test_check_jwt_malformed_token(self):
+        """Fails gracefully when parsing completely malformed token."""
+        import auth
+        is_valid, msg = auth.check_jwt("Bearer not.a.valid.jwt")
+        self.assertFalse(is_valid)
+        self.assertEqual(msg, 'Failed to parse your token.')
+
+    def test_check_jwt_without_bearer_prefix(self):
+        """Handles tokens passed without Bearer prefix."""
+        import auth
+        is_valid, msg = auth.check_jwt("malformed_raw_token")
+        self.assertFalse(is_valid)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -34,10 +34,10 @@ import {
 } from "./config";
 
 // Platform Services
-import MessagingPlatformService from './platformServices/MessagingPlatformService';
-import TwilioFlexPlatformService from './platformServices/TwilioFlexPlatformService';
-import ServiceCloudVoicePlatformService from './platformServices/ServiceCloudVoicePlatformService';
-import GenesysCloudPlatformService from './platformServices/GenesysCloudPlatformService';
+import MessagingPlatformService from "./platformServices/MessagingPlatformService";
+import TwilioFlexPlatformService from "./platformServices/TwilioFlexPlatformService";
+import ServiceCloudVoicePlatformService from "./platformServices/ServiceCloudVoicePlatformService";
+import GenesysCloudPlatformService from "./platformServices/GenesysCloudPlatformService";
 
 // This Zone.js flag must be set to prevent monkey-patching of DOM APIs,
 // some of which are forbidden by Lightning Web Security (LWS).

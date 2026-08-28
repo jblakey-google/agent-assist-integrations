@@ -111,6 +111,45 @@ class TestDialogflowAPI(unittest.TestCase):
         )
 
 
+    @patch('dialogflow_api.logging.warning')
+    def test_store_conversation_mapping_empty_name(self, mock_warning):
+        dialogflow_api.store_conversation_mapping('fake_key', '')
+        mock_warning.assert_called_with("Cannot store mapping with empty key or conversation name.")
+
+    @patch('requests.post')
+    @patch('google.oauth2.id_token.fetch_id_token', side_effect=Exception("Metadata server unavailable"))
+    @patch('dialogflow_api.logging.warning')
+    def test_store_conversation_mapping_id_token_failure(self, mock_warning, mock_token, mock_post):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        dialogflow_api.store_conversation_mapping('fake_key', 'fake_name')
+        mock_warning.assert_called()
+        mock_post.assert_called_once()
+        args, kwargs = mock_post.call_args
+        # Should proceed without Authorization header if token fetch fails
+        self.assertNotIn('Authorization', kwargs['headers'])
+
+    def test_find_participant_by_role(self):
+        mock_p1 = MagicMock()
+        mock_p1.role = 'HUMAN_AGENT'
+        mock_p2 = MagicMock()
+        mock_p2.role = 'END_USER'
+
+        participants = [mock_p1, mock_p2]
+
+        found_agent = dialogflow_api.find_participant_by_role('HUMAN_AGENT', participants)
+        self.assertEqual(found_agent, mock_p1)
+
+        found_user = dialogflow_api.find_participant_by_role('END_USER', participants)
+        self.assertEqual(found_user, mock_p2)
+
+        found_none = dialogflow_api.find_participant_by_role('AUTOMATED_AGENT', participants)
+        self.assertIsNone(found_none)
+
+
 if __name__ == '__main__':
     unittest.main()
+
 

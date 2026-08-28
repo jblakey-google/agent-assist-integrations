@@ -98,11 +98,16 @@ def generate_jwt(user_info=None):
     gcp_agent_assist_user = ''
     if user_info:
         gcp_agent_assist_user = user_info.get('gcp_agent_assist_user')
-    return jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=config.JWT_TOKEN_LIFETIME),
-                       'gcp_agent_assist_project': config.GCP_PROJECT_ID,
-                       'gcp_agent_assist_user': gcp_agent_assist_user},
-                      jwt_secret_key,
-                      'HS256')
+    return jwt.encode(
+        {
+            'exp': datetime.datetime.now(datetime.timezone.utc) +
+                   datetime.timedelta(minutes=config.JWT_TOKEN_LIFETIME),
+            'gcp_agent_assist_project': config.GCP_PROJECT_ID,
+            'gcp_agent_assist_user': gcp_agent_assist_user
+        },
+        jwt_secret_key,
+        'HS256'
+    )
 
 
 def check_app_auth(auth):
