@@ -300,6 +300,22 @@ The AudioHook Interceptor receives dual-channel WebSockets from Genesys Cloud, s
    * **Iframe Sandbox**: `allow-scripts,allow-same-origin,allow-forms,allow-modals,allow-popups`
    * **Permissions Policy**: `clipboard-write,microphone,display-capture`
 
+#### 4.6 User Provisioning & WebRTC Telephony Setup
+When onboarding agents or demo users in Genesys Cloud:
+1. **User Account Creation**:
+   * Navigate to **Admin > Directory > Users** (`+ Add User`) and create the user account with company email.
+2. **Assign Required Roles**:
+   * Open User > **Roles** tab and assign:
+     * `Agent` (or Contact Center Agent)
+     * `Communicate - User` (or PureCloud User)
+   * *(Grants Telephony, Call Make/Accept, and Queue Join permissions).*
+3. **WebRTC Phone Assignment**:
+   * Navigate to **Admin > Telephony > Phone Management** (or edit User > **Phone** tab).
+   * Assign a **Genesys Cloud WebRTC Phone** to enable browser softphone audio streaming without physical desk phone hardware.
+4. **Queue & Group Memberships**:
+   * Go to **Admin > Contact Center > Queues > `${TARGET_QUEUE}` > Members** and add the user.
+   * Go to **Admin > Directory > Groups > `${TARGET_GROUP}` > Members** and add the user.
+
 ---
 
 ### Phase 5: Salesforce DX & Open CTI Setup
@@ -320,9 +336,9 @@ sf project deploy start --metadata RemoteSiteSetting CspTrustedSite CorsWhitelis
 #### 5.3 Configure Call Center Definition & User Assignment
 1. Deploy `GenesysCloud.callCenter-meta.xml` or import `GenesysCloudCallCenter.xml`.
 2. Assign the Call Center definition to your agent / admin user:
-   ```bash
-   sf apex run --file scripts/apex/create_callcenter.apex --target-org <target-org-alias>
-   ```
+  ```bash
+  sf apex run --file scripts/apex/create_callcenter.apex --target-org <target-org-alias>
+  ```
 
 #### 5.4 Configure Softphone Layouts & Screen Pop
 > [!IMPORTANT]
@@ -352,6 +368,56 @@ sf project deploy start --metadata RemoteSiteSetting CspTrustedSite CorsWhitelis
 | **Show Dark Mode Toggle** | Enables dark/light theme switch | `true` |
 | **Show Header** | Shows suggestions header bar | `true` |
 | **Show Correctness Feedback** | Displays thumbs up/down agent feedback | `true` |
+
+---
+
+### Phase 6: Automated User Onboarding & Coworker Demo Runbook
+
+#### 6.1 Automated CLI Onboarding Wizard
+To streamline developer and tester setup, use the interactive CLI helper:
+```bash
+# Inside salesforce/aa-lwc
+npm run onboard
+# Or directly:
+python3 scripts/onboard_demo_user.py
+```
+
+The CLI automates:
+1. **Salesforce Scratch Org User Creation**: Creates a user with unique credentials and generates a 1-click frontdoor login URL.
+2. **Permission & CTI Setup**: Runs `create_callcenter.apex` and `setup_omnichannel.apex` against the target org.
+3. **Genesys Cloud Provisioning Checklist**: Automatically opens the Genesys Cloud Admin Console in the browser and guides through User, WebRTC Phone, and Queue assignments.
+4. **Coworker Demo Runbook Generation**: Exports a ready-to-share Markdown runbook to `~/COWORKER_DEMO_RUNBOOK.md`.
+5. **Diagnostics & Health Check**: Validates SF CLI, Cloud Run UI Connector reachability, and scratch org status.
+
+---
+
+#### 6.2 Coworker / Presenter Demo Runbook
+
+##### 1. Salesforce Login
+* **URL**: Scratch Org Frontdoor / `https://test.salesforce.com`
+* **App**: Open **Service Console** from the App Launcher (9 dots in top-left).
+
+##### 2. Browser Pop-up & Microphone Permissions (CRITICAL)
+1. In Chrome address bar, click the **Site Settings / Lock / Tune** icon.
+2. Ensure **Pop-ups and redirects** is set to **Always allow** for:
+   * `https://*.scratch.lightning.force.com` (or `https://*.salesforce.com`)
+   * `https://*.pure.cloud` (or `https://*.mypurecloud.com`)
+3. Ensure **Microphone** permission is set to **Allow**.
+
+##### 3. Genesys CTI Softphone Login & Presence
+1. In the bottom utility bar of Service Console, click **Genesys CTI Softphone**.
+2. Log in with your Genesys Cloud credentials.
+3. In the top-right corner of the softphone panel, toggle status to **On Queue**.
+4. Verify the queue toggle switch is enabled.
+
+##### 4. Live Call Execution & Agent Assist
+1. Dial the inbound demo phone number mapped to the ACD queue.
+2. Softphone rings -> accept call -> Salesforce auto-screen-pops the Case record.
+3. Google Agent Assist (`agentAssistContainerModule`) on the right sidebar binds the conversation session in 1–3 seconds.
+4. Speak customer and agent dialogue to observe real-time speech-to-text transcripts, generative smart replies, knowledge assist cards, and summarization.
+
+##### 5. After Call Work (ACW)
+* After hanging up, **select a wrap-up code and complete ACW** in the CTI softphone to restore agent status back to **On Queue**.
 
 ---
 
