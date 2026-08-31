@@ -42,10 +42,10 @@ private class AgentAssistAuthControllerTest {
         Test.setMock(HttpCalloutMock.class, new MockOAuthSuccessResponse());
 
         Test.startTest();
-        String token = AgentAssistAuthController.getOAuthToken('fake_consumer_key', 'fake_consumer_secret');
+        String token = AgentAssistAuthController.getOAuthToken('mockKey', 'mockSecret');
         Test.stopTest();
 
-        System.assertEquals('mock_access_token_xyz', token, 'Should successfully return mock access token');
+        System.assertEquals('mock_access_token_xyz', token, 'Should successfully return mock access token via explicit credentials');
     }
 
     @isTest
@@ -55,32 +55,13 @@ private class AgentAssistAuthControllerTest {
         Boolean exceptionThrown = false;
         Test.startTest();
         try {
-            AgentAssistAuthController.getOAuthToken('fake_key', 'fake_secret');
+            AgentAssistAuthController.getOAuthToken('mockKey', 'mockSecret');
         } catch (AuraHandledException e) {
             exceptionThrown = true;
         }
         Test.stopTest();
 
         System.assert(exceptionThrown, 'Should throw AuraHandledException when OAuth callout fails');
-    }
-
-    @isTest
-    static void testGetOAuthTokenMissingParameters() {
-        Boolean keyMissingThrown = false;
-        try {
-            AgentAssistAuthController.getOAuthToken('', 'secret');
-        } catch (AuraHandledException e) {
-            keyMissingThrown = true;
-        }
-        System.assert(keyMissingThrown, 'Should throw exception when key is blank');
-
-        Boolean secretMissingThrown = false;
-        try {
-            AgentAssistAuthController.getOAuthToken('key', null);
-        } catch (AuraHandledException e) {
-            secretMissingThrown = true;
-        }
-        System.assert(secretMissingThrown, 'Should throw exception when secret is null');
     }
 
     @isTest

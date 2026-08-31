@@ -180,6 +180,7 @@ describe("GenesysCloudPlatformService", () => {
       );
 
       const event = {
+        origin: "https://apps.usw2.pure.cloud",
         data: {
           type: "interactionSubscription",
           data: {
@@ -208,6 +209,7 @@ describe("GenesysCloudPlatformService", () => {
       genesysCloudPlatformService.pollingTimeout = "existing-timeout";
 
       const event = {
+        origin: "https://apps.mypurecloud.com",
         data: JSON.stringify({
           type: "PureCloud.Interaction",
           data: {

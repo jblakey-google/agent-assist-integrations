@@ -29,7 +29,7 @@ def load_jwt_secret_key():
     global jwt_secret_key
     if os.path.exists(config.JWT_SECRET_KEY_PATH):
         with open(config.JWT_SECRET_KEY_PATH, 'r') as key_file:
-            jwt_secret_key = key_file.read()
+            jwt_secret_key = key_file.read().strip()
 
 
 def check_auth(token):
@@ -63,12 +63,17 @@ def check_jwt(token):
             # Attempt to verify the token as a Google IAM OIDC (OpenID Connect) identity token.
             # This allows other Cloud Run services (e.g., audiohook backends) in the same GCP 
             # project to authenticate with this UI Connector securely and natively.
-            unverified_claims = jwt.decode(token, options={"verify_signature": False})
-            aud = unverified_claims.get("aud")
             
             # Verify the OIDC token
             req = google_requests.Request()
-            id_info = id_token.verify_oauth2_token(token, req, audience=aud)
+            
+            # If OIDC_AUDIENCE is not explicitly configured, fallback to the unverified claim 
+            # to preserve backwards compatibility for existing deployments without breaking POCs
+            unverified_claims = jwt.decode(token, options={"verify_signature": False})
+            fallback_audience = unverified_claims.get("aud")
+            expected_audience = config.OIDC_AUDIENCE or fallback_audience
+            
+            id_info = id_token.verify_oauth2_token(token, req, audience=expected_audience)
             
             if id_info.get('iss') in ['https://accounts.google.com', 'accounts.google.com']:
                 email = id_info.get('email', '')

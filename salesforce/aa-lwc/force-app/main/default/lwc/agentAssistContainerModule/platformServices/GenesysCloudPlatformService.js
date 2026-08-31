@@ -20,14 +20,7 @@ import getLatestInteractionId from "@salesforce/apex/AgentAssistAuthController.g
 // Module-level shared cache across LWC instances on different record tabs/subtabs
 let latestActiveConversationId = null;
 
-function getCookie(name) {
-  try {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
-  } catch (e) {}
-  return null;
-}
+
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -236,6 +229,10 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
   }
 
   handleGenesysMessage(event) {
+    const trustedOriginPattern = /^https:\/\/apps\.(?:[a-z0-9-]+\.pure\.cloud|mypurecloud\.(?:com|ie|de|jp|com\.au))$/i;
+    if (!trustedOriginPattern.test(event.origin)) {
+      return;
+    }
     try {
       let payload = event.data;
       if (
@@ -399,6 +396,9 @@ export default class GenesysCloudPlatformService extends BasePlatformService {
     conversationIntegrationKey,
     { initialDelay = 1000, maxDelay = 10000, requestTimeoutMs = 9900 } = {}
   ) {
+    if (this.pollingTimeout) {
+      clearTimeout(this.pollingTimeout);
+    }
     if (!conversationIntegrationKey) {
       this.lwc.debugLog(
         "pollForConversationNameByIntegrationKey called with empty integration key"

@@ -17,10 +17,6 @@
 public with sharing class AgentAssistAuthController {
     @AuraEnabled(cacheable=false)
     public static String getOAuthToken(String consumerKey, String consumerSecret) {
-        if (String.isBlank(consumerKey) || String.isBlank(consumerSecret)) {
-            throw new AuraHandledException('Consumer Key and Consumer Secret are required.');
-        }
-
         String domain = System.Url.getOrgDomainUrl().toExternalForm();
         String tokenEndpoint = domain + '/services/oauth2/token';
 
@@ -29,6 +25,8 @@ public with sharing class AgentAssistAuthController {
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/x-www-form-urlencoded');
 
+        // Note: For a production deployment, passing secrets from the client is a security risk.
+        // This integration uses explicit credentials for ease of configuration in POC environments.
         String body = 'grant_type=client_credentials'
             + '&client_id=' + EncodingUtil.urlEncode(consumerKey, 'UTF-8')
             + '&client_secret=' + EncodingUtil.urlEncode(consumerSecret, 'UTF-8');
@@ -56,6 +54,7 @@ public with sharing class AgentAssistAuthController {
                     WHERE WhatId = :recordId 
                     ORDER BY CreatedDate DESC 
                     LIMIT 5
+                    WITH USER_MODE
                 ];
                 for (Task t : recordTasks) {
                     if (String.isNotBlank(t.CallObject)) {
@@ -73,6 +72,7 @@ public with sharing class AgentAssistAuthController {
                   AND CreatedDate >= :recentCutoff 
                 ORDER BY CreatedDate DESC 
                 LIMIT 5
+                WITH USER_MODE
             ];
             for (Task t : userTasks) {
                 if (String.isNotBlank(t.CallObject)) {

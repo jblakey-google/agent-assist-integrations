@@ -196,7 +196,7 @@ def set_conversation_name():
     hashed_key = hashlib.sha256(conversation_integration_key.encode('utf-8')).hexdigest()
     logging.info(
         '/conversation-name - redis: SET %s %s', conversation_integration_key, conversation_name)
-    result = redis_client.set(hashed_key, conversation_name)
+    result = redis_client.set(hashed_key, conversation_name, ex=86400)
     if not result:
         return make_response('Bad request', 400)
     return jsonify({conversation_integration_key: conversation_name})

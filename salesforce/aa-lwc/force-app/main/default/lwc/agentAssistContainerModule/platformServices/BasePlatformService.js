@@ -54,12 +54,10 @@ export default class BasePlatformService {
     // Get a UI Connector auth token using a SF External Client App id token via Apex.
     let access_token = null;
     try {
-      if (this.lwc.consumerKey && this.lwc.consumerSecret) {
-        access_token = await getOAuthToken({
-          consumerKey: this.lwc.consumerKey,
-          consumerSecret: this.lwc.consumerSecret
-        });
-      }
+      access_token = await getOAuthToken({
+        consumerKey: this.lwc.consumerKey,
+        consumerSecret: this.lwc.consumerSecret
+      });
     } catch (err) {
       console.error("Failed to retrieve OAuth token via Apex:", err);
       this.lwc.loadError = err;

@@ -33,6 +33,9 @@ logging.basicConfig(filename=os.environ.get(
 # Reference: https://cloud.google.com/run/docs/configuring/secrets#mounting-secrets.
 JWT_SECRET_KEY_PATH = '/secret/jwt_secret_key'
 
+# The expected audience for OIDC tokens used for service-to-service authentication.
+OIDC_AUDIENCE = os.environ.get('OIDC_AUDIENCE', '')
+
 # TODO replace '*' with a list of allowed origins to limit the access to your server.
 # Origin or list of origins that are allowed to connect to this server.
 CORS_ALLOWED_ORIGINS = '*'
