@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from threading import Thread
 
 import numpy as np
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_sock import Sock
 from google.api_core.exceptions import NotFound
 from google.cloud import dialogflow_v2beta1 as dialogflow
@@ -30,6 +30,7 @@ from simple_websocket import Server
 from audio_stream import Stream
 from audiohook import DEFAULT_CONVERSATION_ID, AudioHook
 from audiohook_config import config
+from auth import verify_signature
 from dialogflow_api import (DialogflowAPI, await_redis, create_conversation_name,
                             find_participant_by_role, location_id, project)
 
@@ -190,6 +191,22 @@ def audiohook_connect(ws: Server):
     Args:
         ws (Server): Websocket server for exchange messages
     """
+    # Verify RFC 9421 signature & API key from WebSocket handshake headers
+    is_valid, err_msg = verify_signature(
+        headers=dict(request.headers),
+        method=request.method,
+        path=request.path,
+        client_secret=config.client_secret,
+        expected_api_key=config.api_key,
+    )
+    if not is_valid:
+        logging.warning("Unauthorized AudioHook connection rejected: %s", err_msg)
+        try:
+            ws.close(reason=1008, message=f"Policy Violation: {err_msg}")
+        except Exception:
+            ws.close()
+        return
+
     agent_stream = Stream(
         config.rate, chunk_size=config.chunk_size)
     customer_stream = Stream(
