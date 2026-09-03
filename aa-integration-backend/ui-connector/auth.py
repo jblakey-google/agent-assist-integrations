@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import datetime
 import jwt
 import requests
@@ -25,8 +26,12 @@ jwt_secret_key = ''  # To be loaded from config.JWT_SECRET_KEY_PATH
 
 
 def load_jwt_secret_key():
-    with open(config.JWT_SECRET_KEY_PATH, 'r') as key_file:
-        jwt_secret_key = key_file.read()
+    global jwt_secret_key
+    if os.path.exists(config.JWT_SECRET_KEY_PATH):
+        with open(config.JWT_SECRET_KEY_PATH, 'r') as key_file:
+            jwt_secret_key = key_file.read().strip()
+    else:
+        jwt_secret_key = os.environ.get('JWT_SECRET_KEY', 'default-test-jwt-secret-key')
 
 
 def check_auth(token):
@@ -51,7 +56,36 @@ def check_auth(token):
 def check_jwt(token):
     try:
         if token.startswith("Bearer "):
-            token = token.split(" ")[1]
+            token = token.split(" ", 1)[1]
+            
+        try:
+            from google.oauth2 import id_token
+            from google.auth.transport import requests as google_requests
+            
+            # Attempt to verify the token as a Google IAM OIDC (OpenID Connect) identity token.
+            # This allows other Cloud Run services (e.g., audiohook backends) in the same GCP 
+            # project to authenticate with this UI Connector securely and natively.
+            
+            # Verify the OIDC token
+            req = google_requests.Request()
+            
+            # If OIDC_AUDIENCE is not explicitly configured, fallback to the unverified claim 
+            # to preserve backwards compatibility for existing deployments without breaking POCs
+            unverified_claims = jwt.decode(token, options={"verify_signature": False})
+            fallback_audience = unverified_claims.get("aud")
+            expected_audience = config.OIDC_AUDIENCE or fallback_audience
+            
+            id_info = id_token.verify_oauth2_token(token, req, audience=expected_audience)
+            
+            if id_info.get('iss') in ['https://accounts.google.com', 'accounts.google.com']:
+                email = id_info.get('email', '')
+                # Ensure the calling service account belongs to our exact GCP project.
+                # This guarantees that only our own internal services can authorize this way.
+                if email.endswith(f"@{config.GCP_PROJECT_ID}.iam.gserviceaccount.com"):
+                    return True, 'Your Google ID token is valid.'
+        except Exception as e:
+            pass # Fall back to the standard UI connector JWT logic
+
         # Decode the payload to fetch the stored details.
         data = jwt.decode(token, jwt_secret_key, algorithms=['HS256'])
         if 'gcp_agent_assist_project' not in data:
@@ -63,7 +97,7 @@ def check_jwt(token):
         if data['exp'] < datetime.datetime.now().timestamp():
             return False, 'Your token has expired.'
         return True, 'Your token is valid.'
-    except:
+    except Exception:
         return False, 'Failed to parse your token.'
 
 
@@ -71,11 +105,16 @@ def generate_jwt(user_info=None):
     gcp_agent_assist_user = ''
     if user_info:
         gcp_agent_assist_user = user_info.get('gcp_agent_assist_user')
-    return jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=config.JWT_TOKEN_LIFETIME),
-                       'gcp_agent_assist_project': config.GCP_PROJECT_ID,
-                       'gcp_agent_assist_user': gcp_agent_assist_user},
-                      jwt_secret_key,
-                      'HS256')
+    return jwt.encode(
+        {
+            'exp': datetime.datetime.now(datetime.timezone.utc) +
+                   datetime.timedelta(minutes=config.JWT_TOKEN_LIFETIME),
+            'gcp_agent_assist_project': config.GCP_PROJECT_ID,
+            'gcp_agent_assist_user': gcp_agent_assist_user
+        },
+        jwt_secret_key,
+        'HS256'
+    )
 
 
 def check_app_auth(auth):

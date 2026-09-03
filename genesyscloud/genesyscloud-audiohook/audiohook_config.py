@@ -34,7 +34,7 @@ class AudiohookConfig:
     project_id: str
     ui_connector_endpoint: str
     redis_host: str
-    redis_port: int
+    redis_port: Optional[int]
     api_key: Optional[str] = field(default=None)
     client_secret: Optional[str] = field(default=None)
     log_level: str = field(default='INFO')
